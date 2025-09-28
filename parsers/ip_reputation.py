@@ -1,5 +1,12 @@
 import re
 
+# Hardcoded list of known bad IPs (mock threat intel)
+known_bad_ips = {
+    "192.168.1.101": "SSH brute force",
+    "203.0.113.45": "Firewall evasion",
+    "198.51.100.23": "Reconnaissance"
+}
+
 def extract_ips(filename, pattern):
     try:
         with open(filename, "r") as file:
@@ -10,29 +17,21 @@ def extract_ips(filename, pattern):
         print(f"[!] {filename} not found")
         return []
 
-def correlate_logs():
+def check_ip_reputation():
+    print("[+] Checking IP reputation across logs...")
     auth_ips = extract_ips("logs/auth.log", r"Failed password.*from (\d+\.\d+\.\d+\.\d+)")
     firewall_ips = extract_ips("logs/firewall.log", r"Blocked connection from (\d+\.\d+\.\d+\.\d+)")
     web_ips = extract_ips("logs/web.log", r"GET /admin from (\d+\.\d+\.\d+\.\d+)")
 
-    all_ips = auth_ips + firewall_ips + web_ips
-    unique_ips = set(all_ips)
+    all_ips = set(auth_ips + firewall_ips + web_ips)
 
-    print("[+] Correlating IPs across logs...")
-    for ip in unique_ips:
-        sources = []
-        if ip in auth_ips:
-            sources.append("auth.log")
-        if ip in firewall_ips:
-            sources.append("firewall.log")
-        if ip in web_ips:
-            sources.append("web.log")
+    for ip in all_ips:
+        if ip in known_bad_ips:
+            print(f"[⚠] {ip} flagged: {known_bad_ips[ip]}")
+        else:
+            print(f"[✓] {ip} not found in threat intel")
 
-        if len(sources) > 1:
-            print(f"[⚠] {ip} appears in: {', '.join(sources)}")
-
-    print("[✓] Correlation complete")
+    print("[✓] Reputation check complete")
 
 if __name__ == "__main__":
-    correlate_logs()
-
+    check_ip_reputation()
