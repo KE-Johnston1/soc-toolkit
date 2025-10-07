@@ -1,50 +1,46 @@
-SOC Toolkit: Modular Threat Detection & Log Analysis
-A hands-on cybersecurity toolkit built for clarity, modularity, and real-world scenarios. This CLI-powered tool parses logs, detects threats, correlates activity, and checks IP reputation designed to support entry level SOC workflows and showcase practical detection logic.
+# SOC Toolkit
 
-Why I Built This
-I created this toolkit to sharpen my threat detection skills and build something I could confidently share with recruiters, peers, and learners alike. I wanted a project that reflects how I think: clear, modular, and scenario-driven. Every module is designed to be testable, readable, and grounded in real-world logic—because I believe cybersecurity should be accessible, transparent, and empowering.
+A hands-on cybersecurity toolkit for threat detection and log analysis, built for clarity, modularity, and real-world scenarios.
 
-Project Structure
-soc-toolkit/
-├── logs/           # Sample log files (auth, firewall, web)
-├── output/         # Saved reports from each module
-├── parsers/        # Modular detection scripts
-├── main.py         # CLI controller with interactive mode
-└── README.md       # Project overview and usage
-How to Use
+## Overview
 
-Run a Module via CLI
+This project includes:
 
-python main.py --module log
-python main.py --module firewall
-python main.py --module web
-python main.py --module correlate
-python main.py --module reputation
+- Log parsing and anomaly detection  
+- Signature matching for known attacker behaviours  
+- CLI wrappers for modular execution  
+- Sample outputs and documentation for educational and portfolio use
 
-Or Use Interactive Mode
-python main.py
-Then select a module by number.
+## Modules
 
-Modules Overview
-Module	Description
-log	Detects SSH brute force attempts from auth.log
-firewall	Flags blocked SSH traffic in firewall.log
-web	Detects suspicious /admin access in web.log
-correlate	Cross-references IPs across all logs for multi-vector threats
-reputation	Flags known bad IPs using mock threat intelligence
+| Component            | Description                                      |
+|----------------------|--------------------------------------------------|
+| `log_parser.py`      | Parses logs and extracts relevant entries        |
+| `anomaly_detector.py`| Flags unusual activity based on frequency        |
+| `signature_matcher.py`| Matches patterns against known attacker tools  |
+| `cli_wrapper.py`     | Unified command-line interface                   |
+| `samples/`           | Sample logs and visual outputs                   |
 
-Output Saving
-Each module can optionally save results to the output/ folder. Example:
-python parsers/log_parser.py
-# → output/log_report.txt created
+## Usage
 
-Project Highlights
-Regex-based detection for flexible log parsing
+Run the CLI wrapper:
+python cli_wrapper.py
 
-Modular CLI architecture with interactive mode
+Optional flags:
+- `--parse` → Run log parser  
+- `--detect` → Run anomaly detector  
+- `--match` → Run signature matcher  
+- `--save` → Save output to file
 
-Realistic log samples and scenario-driven logic
+## Status
 
-Threat correlation and reputation analysis
+Actively maintained. Additional modules and case studies in development.
 
-Clean output formatting and optional report saving
+## Ethical Notice
+
+This toolkit is intended for educational and defensive purposes only.  
+It must not be used to monitor or interfere with systems without explicit permission.
+
+## Author
+
+Created by [Karen Johnston](https://github.com/KE-Johnston1) — entry-level cybersecurity analyst focused on ethical detection tooling and modular documentation.
