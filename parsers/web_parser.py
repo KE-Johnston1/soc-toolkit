@@ -1,22 +1,43 @@
+"""Parse synthetic web observations into structured SOC events."""
+
+from pathlib import Path
 import re
 
-def parse_web_log():
-    try:
-        with open("logs/web.log", "r") as file:
-            lines = file.readlines()
-            pattern = r"GET /admin from (\d+\.\d+\.\d+\.\d+)"
-            matches = [re.search(pattern, line) for line in lines]
-            suspicious_ips = [match.group(1) for match in matches if match]
+from soc_toolkit.models import LogEvent
 
-            if suspicious_ips:
-                print("[!] Suspicious access to /admin detected:")
-                for ip in set(suspicious_ips):
-                    count = suspicious_ips.count(ip)
-                    print(f"    {ip} accessed /admin {count} times")
-            else:
-                print("[✓] No suspicious web activity detected")
-    except FileNotFoundError:
-        print("[!] web.log not found")
+_WEB_PATTERN = re.compile(
+    r"^(?P<timestamp>[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+"
+    r"webserver:\s+GET\s+(?P<path>\S+)\s+from\s+(?P<source_ip>\S+)"
+)
 
-if __name__ == "__main__":
-    parse_web_log()
+
+def parse_web_log(path: str | Path = "logs/web.log") -> list[LogEvent]:
+    """Parse web requests without classifying them as malicious."""
+    events: list[LogEvent] = []
+    for raw_line in Path(path).read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        match = _WEB_PATTERN.match(line)
+        if not match:
+            continue
+
+        events.append(
+            LogEvent(
+                timestamp=None,
+                source_ip=match.group("source_ip"),
+                destination_ip=None,
+                source_port=None,
+                destination_port=443,
+                protocol="https",
+                event_type="web_request",
+                account=None,
+                action="GET",
+                message=line,
+                evidence_source=str(path),
+                raw_line=raw_line,
+                metadata={
+                    "syslog_timestamp": match.group("timestamp"),
+                    "request_path": match.group("path"),
+                },
+            )
+        )
+    return events
