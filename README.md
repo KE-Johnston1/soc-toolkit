@@ -1,6 +1,6 @@
 # SOC Toolkit
 
-A defensive Python toolkit for turning synthetic security logs into structured observations, detection signals, evidence correlation, analyst assessment, risk context, escalation recommendations, and controlled response decisions.
+A defensive Python toolkit for turning synthetic security logs into structured observations, detection signals, evidence correlation, analyst assessment, risk context, escalation recommendations, controlled response decisions, and auditable case handling.
 
 ## Analyst workflow
 
@@ -28,20 +28,32 @@ Closure and lessons learned
 
 The project deliberately separates **detection**, **assessment**, **risk**, **escalation**, and **response**. A rule firing is an investigation lead, not proof of brute force, compromise, malicious intent, or an incident.
 
+## End-to-end case demonstration
+
+The `pipeline` module composes the existing decision layers around one synthetic SSH authentication scenario. It demonstrates how an analyst can move from a detection signal to an evidence-backed assessment, organisational risk context, escalation recommendation, controlled response, and case status without inventing missing evidence.
+
+Run it with:
+
+```bash
+python main.py --module pipeline
+```
+
+The demonstration intentionally leaves ownership, authorization, timing, network, endpoint, and change/testing verification incomplete. The resulting case therefore remains investigative rather than being presented as a confirmed compromise.
+
 ## Current capabilities
 
 - Structured `LogEvent` model with IP, port, protocol, timestamp, account, and evidence-source validation
 - SSH authentication parsing without inventing missing year/timezone information
 - Evidence-aware repeated authentication detection with configurable threshold and time window
-- Cross-source correlation with explicit temporal-correlation handling
 - Analyst assessment states: `Expected`, `Requires Investigation`, `Insufficient Evidence`, and `Security Concern`
 - Evidence items with source, observation, confidence, and relationship (`direct`, `corroborating`, `contradicting`)
 - Explicit evidence-gap tracking and recommended next actions
 - Organisational risk context covering asset criticality, account privilege, data sensitivity, likelihood, business/financial impact, CVE relevance, CVSS severity, and legal/privacy considerations
-- Evidence-based escalation recommendations with separate specialist and stakeholder routing
+- Evidence-based escalation recommendations with specialist and stakeholder routing
 - Controlled response actions: monitor, investigate, escalate, contain, remediate, recover, and close
 - Case lifecycle with validated status transitions and an auditable analyst decision trail
-- Unit tests across validation, parsing, detection, correlation, assessment, risk, escalation, response, and case management
+- End-to-end synthetic case pipeline combining the decision layers into one reproducible analyst workflow
+- Unit tests across validation, parsing, detection, assessment, risk, escalation, response, case management, and pipeline behaviour
 
 ## Analyst principles
 
@@ -59,6 +71,12 @@ Run the structured analyst assessment:
 
 ```bash
 python main.py --module assessment
+```
+
+Run the end-to-end case pipeline:
+
+```bash
+python main.py --module pipeline
 ```
 
 Run a response recommendation:
@@ -89,6 +107,7 @@ soc_toolkit/
 ├── case_management.py       # Controlled case lifecycle and decision trail
 ├── escalation.py             # Evidence-based escalation recommendations
 ├── models.py                 # Validated structured event model
+├── pipeline.py               # End-to-end synthetic case workflow
 ├── response.py               # Controlled response decisions
 └── risk.py                   # Organisational risk context
 
@@ -105,7 +124,8 @@ tests/
 ├── test_models_and_auth.py
 ├── test_assessment.py
 ├── test_risk_escalation.py
-└── test_response_case_management.py
+├── test_response_case_management.py
+└── test_pipeline.py
 ```
 
 Additional legacy modules and sample logs remain in the repository while the refactor is completed.
