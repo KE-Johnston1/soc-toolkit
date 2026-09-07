@@ -195,10 +195,16 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
             timestamp=case.created_at + timedelta(minutes=2),
         )
 
+    correlated_sources = ["authentication log"]
+    if case.network_reviewed:
+        correlated_sources.append("network evidence")
+    if case.endpoint_reviewed:
+        correlated_sources.append("endpoint evidence")
+
     return CaseSummary(
         case=record,
         detections=detections,
-        correlated_sources=tuple(sorted({"authentication log", *("network evidence",) if case.network_reviewed else (), *("endpoint evidence",) if case.endpoint_reviewed else ()})),
+        correlated_sources=tuple(sorted(correlated_sources)),
         assessment=assessment,
         risk=risk,
         escalation=escalation,
