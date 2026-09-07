@@ -1,61 +1,69 @@
+"""Command-line entry point for the structured SOC Toolkit workflow."""
+
 import argparse
+from pathlib import Path
 
-def run_module(module):
+from detections.authentication import detect_repeated_authentication_failures
+from parsers.auth_parser import parse_auth_log
+from parsers.firewall_parser import parse_firewall_log
+from parsers.web_parser import parse_web_log
+from soc_toolkit.correlation import correlate_events
+
+
+def load_events() -> list:
+    """Load supported synthetic log sources into one event stream."""
+    events = []
+    for parser, path in (
+        (parse_auth_log, Path("logs/auth.log")),
+        (parse_firewall_log, Path("logs/firewall.log")),
+        (parse_web_log, Path("logs/web.log")),
+    ):
+        if path.exists():
+            events.extend(parser(path))
+    return events
+
+
+def run_module(module: str) -> None:
+    events = load_events()
+
     if module == "log":
-        from parsers import log_parser
-        log_parser.parse_auth_log()
-
+        auth_events = [e for e in events if e.evidence_source.endswith("auth.log")]
+        print(f"Observed {len(auth_events)} authentication events.")
+        for event in auth_events:
+            print(f"{event.event_type}: source={event.source_ip} account={event.account} action={event.action}")
     elif module == "firewall":
-        from parsers import firewall_parser
-        firewall_parser.parse_firewall_log()
-
+        firewall_events = [e for e in events if e.evidence_source.endswith("firewall.log")]
+        print(f"Observed {len(firewall_events)} firewall events.")
+        for event in firewall_events:
+            print(f"{event.action}: source={event.source_ip} destination_port={event.destination_port}")
     elif module == "web":
-        from parsers import web_parser
-        web_parser.parse_web_log()
-
+        web_events = [e for e in events if e.event_type == "web_request"]
+        print(f"Observed {len(web_events)} web requests.")
+        for event in web_events:
+            print(f"{event.action}: source={event.source_ip} path={event.metadata.get('request_path')}")
     elif module == "correlate":
-        from parsers import correlate_logs
-        correlate_logs.correlate_logs()
-
-    elif module == "reputation":
-        from parsers import ip_reputation
-        ip_reputation.check_ip_reputation()
-
-    else:
-        print("[!] Invalid module name")
-        print("    Use: log, firewall, web, correlate, reputation")
-
-def main():
-    parser = argparse.ArgumentParser(description="SOC Toolkit CLI")
-    parser.add_argument("--module", type=str, help="Module to run: log, firewall, web, correlate, reputation")
-    args = parser.parse_args()
-
-    if args.module:
-        run_module(args.module)
-    else:
-        print("Select a module to run:")
-        print("  1. log")
-        print("  2. firewall")
-        print("  3. web")
-        print("  4. correlate")
-        print("  5. reputation")
-        choice = input("Enter number (1–5): ").strip()
-
-        options = {
-            "1": "log",
-            "2": "firewall",
-            "3": "web",
-            "4": "correlate",
-            "5": "reputation"
-        }
-
-        selected = options.get(choice)
-        if selected:
-            run_module(selected)
+        for result in correlate_events(events):
+            print(f"{result.assessment}: {result.source_ip} sources={', '.join(result.evidence_sources)} confidence={result.confidence}")
+    elif module == "detect":
+        auth_events = [e for e in events if e.event_type.startswith("authentication_")]
+        result = detect_repeated_authentication_failures(auth_events)
+        if result is None:
+            print("No configured repeated-authentication detection fired.")
         else:
-            print("[!] Invalid selection")
+            print(f"{result.assessment}: {result.rule_id} confidence={result.confidence}")
+            print(result.rationale)
+            for gap in result.evidence_gaps:
+                print(f"Evidence gap: {gap}")
+    else:
+        raise ValueError(f"unsupported module: {module}")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Evidence-aware SOC Toolkit CLI")
+    parser.add_argument("--module", choices=("log", "firewall", "web", "correlate", "detect"), default="detect")
+    args = parser.parse_args()
+    run_module(args.module)
+
 
 if __name__ == "__main__":
     main()
-
-
