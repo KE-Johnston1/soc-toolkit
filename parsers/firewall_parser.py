@@ -19,22 +19,5 @@ def parse_firewall_log(path: str | Path = "logs/firewall.log") -> list[LogEvent]
         match = _FIREWALL_PATTERN.match(line)
         if not match:
             continue
-
-        events.append(
-            LogEvent(
-                timestamp=None,
-                source_ip=match.group("source_ip"),
-                destination_ip=None,
-                source_port=None,
-                destination_port=int(match.group("port")),
-                protocol=None,
-                event_type="firewall",
-                account=None,
-                action="blocked",
-                message=line,
-                evidence_source=str(path),
-                raw_line=raw_line,
-                metadata={"syslog_timestamp": match.group("timestamp")},
-            )
-        )
+        events.append(LogEvent(timestamp=None, source_ip=match.group("source_ip"), destination_ip=None, source_port=None, destination_port=int(match.group("port")), protocol=None, event_type="firewall", account=None, action="blocked", message=line, evidence_source=str(path), raw_line=raw_line, metadata={"syslog_timestamp": match.group("timestamp")}))
     return events
