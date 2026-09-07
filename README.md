@@ -89,9 +89,8 @@ soc_toolkit/
 ├── case_management.py       # Controlled case lifecycle and decision trail
 ├── escalation.py             # Evidence-based escalation recommendations
 ├── models.py                 # Validated structured event model
-└── response.py               # Controlled response decisions
-
-risk.py / escalation.py       # Risk and escalation decision layers
+├── response.py               # Controlled response decisions
+└── risk.py                   # Organisational risk context
 
 detections/
 └── authentication.py         # Repeated SSH authentication detection
