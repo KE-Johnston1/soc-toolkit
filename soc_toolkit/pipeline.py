@@ -1,9 +1,4 @@
-"""End-to-end synthetic SOC investigation pipeline.
-
-This module composes detection, assessment, risk, escalation, response, and
-case-management layers. It uses caller-supplied evidence only and performs no
-live collection or automated containment.
-"""
+"""End-to-end synthetic SOC investigation pipeline."""
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -81,12 +76,7 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
     if detections:
         detection = detections[0]
         evidence.extend(
-            EvidenceItem(
-                source="authentication detector",
-                observation=item,
-                confidence=detection.confidence,
-                relationship="direct",
-            )
+            EvidenceItem("authentication detector", item, detection.confidence, "direct")
             for item in detection.evidence
         )
     if case.network_reviewed:
@@ -141,27 +131,27 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
             business_impact=case.business_impact,
             sensitive_data_involved=case.sensitive_data_involved,
             legal_privacy_consideration=case.legal_privacy_consideration,
-            containment_risk=case.containment_risk if hasattr(case, "containment_risk") else False,
             repeated_related_alerts=case.multiple_accounts,
         )
     )
 
+    combined_gaps = tuple(dict.fromkeys(assessment.evidence_gaps + risk.evidence_gaps + escalation.evidence_gaps))
+    closure_rationale = "Verified expected activity with no unresolved evidence gaps." if assessment.assessment == "Expected" and not combined_gaps else ""
     response = recommend_response(
         ResponseInput(
             assessment=assessment.assessment,
             confidence=assessment.confidence,
             escalation_level=escalation.level,
-            evidence_gaps=assessment.evidence_gaps + risk.evidence_gaps,
+            evidence_gaps=combined_gaps,
             containment_authorized=case.containment_authorized,
             containment_safe=case.containment_safe,
             remediation_authorized=case.remediation_authorized,
             recovery_ready=case.recovery_ready,
-            closure_criteria_met=assessment.assessment == "Expected" and not assessment.evidence_gaps and not risk.evidence_gaps,
-            closure_rationale=("Verified expected activity with no unresolved evidence gaps." if assessment.assessment == "Expected" and not risk.evidence_gaps else ""),
+            closure_criteria_met=assessment.assessment == "Expected" and not combined_gaps,
+            closure_rationale=closure_rationale,
         )
     )
 
-    gaps = list(dict.fromkeys(assessment.evidence_gaps + risk.evidence_gaps + escalation.evidence_gaps))
     record = CaseRecord(
         case_id=case.case_id,
         alert_id=case.alert_id,
@@ -171,8 +161,8 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
         risk=risk.overall_risk,
         escalation=escalation.level,
         response=response.action,
-        evidence_gaps=gaps,
-        closure_rationale=("Verified expected activity with no unresolved evidence gaps." if response.action == "Close" else ""),
+        evidence_gaps=list(combined_gaps),
+        closure_rationale=closure_rationale,
     )
 
     transition_case(
@@ -194,16 +184,24 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
             confidence=assessment.confidence,
             timestamp=case.created_at + timedelta(minutes=2),
         )
+    elif response.action == "Close":
+        transition_case(
+            record,
+            "Closed",
+            actor_role="SOC Analyst",
+            rationale=closure_rationale,
+            evidence_source="analyst assessment",
+            confidence=assessment.confidence,
+            timestamp=case.created_at + timedelta(minutes=2),
+        )
 
     return CaseSummary(
         case=record,
         detections=detections,
-        correlated_sources=tuple(
-            sorted({"authentication log", *("network evidence",) if case.network_reviewed else (), *("endpoint evidence",) if case.endpoint_reviewed else ()})
-        ),
+        correlated_sources=tuple(sorted({"authentication log", *("network evidence",) if case.network_reviewed else (), *("endpoint evidence",) if case.endpoint_reviewed else ()})),
         assessment=assessment,
         risk=risk,
         escalation=escalation,
         response=response,
-        closure_ready=response.action == "Close",
+        closure_ready=response.action == "Close" and record.status == "Closed",
     )
