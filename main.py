@@ -1,7 +1,7 @@
 """Command-line entry point for the SOC Toolkit."""
 
 import argparse
-from datetime import timezone
+from datetime import datetime, timezone
 
 
 def run_assessment() -> None:
@@ -12,30 +12,14 @@ def run_assessment() -> None:
 
     events = parse_auth_log("logs/auth.log", year=2026, tz=timezone.utc)
     detections = detect_repeated_auth_failures(events)
-
     if not detections:
         print("Assessment: Expected")
         print("Confidence: High")
         print("Rationale: No configured authentication detection was triggered.")
         return
-
     detection = detections[0]
-    evidence = tuple(
-        EvidenceItem(
-            source="authentication detector",
-            observation=item,
-            confidence=detection.confidence,
-            relationship="direct",
-        )
-        for item in detection.evidence
-    )
-    assessment = assess_detection(
-        AssessmentInput(
-            detection_present=True,
-            evidence=evidence,
-        )
-    )
-
+    evidence = tuple(EvidenceItem(source="authentication detector", observation=item, confidence=detection.confidence, relationship="direct") for item in detection.evidence)
+    assessment = assess_detection(AssessmentInput(detection_present=True, evidence=evidence))
     print(f"Detection: {detection.rule_id}")
     print(f"Assessment: {assessment.assessment}")
     print(f"Confidence: {assessment.confidence}")
@@ -48,63 +32,62 @@ def run_assessment() -> None:
             print(f"  - {gap}")
 
 
+def run_response() -> None:
+    """Show a controlled response recommendation for a synthetic case."""
+    from soc_toolkit.response import ResponseInput, recommend_response
+    decision = recommend_response(ResponseInput("Requires Investigation", "Medium", escalation_level="Tier 2", evidence_gaps=("post-authentication activity has not been reviewed",)))
+    print(f"Response: {decision.action}")
+    print(f"Rationale: {decision.rationale}")
+    for item in decision.evidence_requirements:
+        print(f"  - {item}")
+
+
+def run_case() -> None:
+    """Show a synthetic case transition and decision-trail entry."""
+    from soc_toolkit.case_management import CaseRecord, transition_case
+    case = CaseRecord("CASE-DEMO-001", "ALERT-DEMO-001", datetime(2026, 9, 7, 12, 0, tzinfo=timezone.utc), assessment="Requires Investigation", evidence_gaps=["ownership requires verification"])
+    transition_case(case, "Investigating", actor_role="SOC Analyst", rationale="Alert requires evidence collection before risk or closure decisions.", timestamp=datetime(2026, 9, 7, 12, 5, tzinfo=timezone.utc))
+    print(f"Case: {case.case_id}")
+    print(f"Status: {case.status}")
+    print(f"Decision trail entries: {len(case.decision_trail)}")
+
+
 def run_module(module: str) -> None:
     """Run one toolkit module while retaining legacy entry points."""
     if module == "log":
         from parsers import log_parser
-        for event in log_parser.parse_auth_log():
-            print(event)
+        for event in log_parser.parse_auth_log(): print(event)
     elif module == "firewall":
         from parsers import firewall_parser
-        for event in firewall_parser.parse_firewall_log():
-            print(event)
+        for event in firewall_parser.parse_firewall_log(): print(event)
     elif module == "web":
         from parsers import web_parser
-        for event in web_parser.parse_web_log():
-            print(event)
+        for event in web_parser.parse_web_log(): print(event)
     elif module == "correlate":
         from parsers import correlate_logs
         correlate_logs.correlate_logs()
     elif module == "reputation":
         from parsers import ip_reputation
         ip_reputation.check_ip_reputation()
-    elif module == "assessment":
-        run_assessment()
-    else:
-        raise ValueError("unknown module")
+    elif module == "assessment": run_assessment()
+    elif module == "response": run_response()
+    elif module == "case": run_case()
+    else: raise ValueError("unknown module")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="SOC Toolkit CLI")
-    parser.add_argument(
-        "--module",
-        choices=("log", "firewall", "web", "correlate", "reputation", "assessment"),
-        help="Module to run",
-    )
+    parser.add_argument("--module", choices=("log", "firewall", "web", "correlate", "reputation", "assessment", "response", "case"), help="Module to run")
     args = parser.parse_args()
-
     if args.module:
         run_module(args.module)
         return
-
     print("Select a module to run:")
-    options = {
-        "1": "log",
-        "2": "firewall",
-        "3": "web",
-        "4": "correlate",
-        "5": "reputation",
-        "6": "assessment",
-    }
-    for number, module in options.items():
-        print(f"  {number}. {module}")
-
-    choice = input("Enter number (1–6): ").strip()
-    selected = options.get(choice)
-    if selected:
-        run_module(selected)
-    else:
-        print("[!] Invalid selection")
+    options = {"1":"log", "2":"firewall", "3":"web", "4":"correlate", "5":"reputation", "6":"assessment", "7":"response", "8":"case"}
+    for number, module in options.items(): print(f"  {number}. {module}")
+    selected = options.get(input("Enter number (1–8): ").strip())
+    if selected: run_module(selected)
+    else: print("[!] Invalid selection")
 
 
 if __name__ == "__main__":
