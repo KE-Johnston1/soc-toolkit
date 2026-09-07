@@ -2,7 +2,7 @@
 
 **Audit status:** Initial structural and code audit  
 **Repository:** `KE-Johnston1/soc-toolkit`  
-**Branch:** `main`  
+**Audit baseline:** `main`  
 **Audit date:** 2026-09-07
 
 ## Executive Summary
@@ -36,8 +36,7 @@ The existing implementation should be treated as a refactor-and-validation proje
 13. Remove or clearly justify empty duplicate root-level modules.
 14. Review committed generated `output/log_report.txt`; generated reports should normally be reproducible rather than source data.
 15. Establish a clear Python package/module layout and consistent imports.
-16. Refresh the MIT licence copyright year to 2026.
-17. Add a project-specific `.gitignore`.
+16. **Repository hygiene completed:** MIT licence year refreshed to 2026; a Python-focused `.gitignore` has been added; `output/.gitkeep` preserves the output directory without requiring generated reports to be tracked.
 
 ## Security / Analyst Design Assessment
 
@@ -79,4 +78,4 @@ Engineering goals:
 
 **Current state: functional proof-of-concept, not employment-ready.**
 
-The existing code is salvageable. The next implementation stage should establish repository hygiene and automated quality controls, then refactor and test the core parsers before adding advanced SOC functionality.
+The existing code is salvageable. The next implementation stage should establish automated quality controls, clean generated artefacts, then refactor and test the core parsers before adding advanced SOC functionality.
