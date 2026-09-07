@@ -52,6 +52,39 @@ def run_case() -> None:
     print(f"Decision trail entries: {len(case.decision_trail)}")
 
 
+def run_pipeline() -> None:
+    """Run the flagship synthetic SSH case through every decision layer."""
+    from soc_toolkit.pipeline import PipelineInput, run_pipeline as execute_pipeline
+
+    result = execute_pipeline(
+        PipelineInput(
+            case_id="CASE-SSH-001",
+            alert_id="ALERT-SSH-001",
+            auth_log_path="logs/auth.log",
+            privileged_account=True,
+            asset_criticality="High",
+            account_privilege="High",
+            likelihood="Medium",
+            business_impact="High",
+        )
+    )
+    print(f"Case: {result.case.case_id}")
+    print(f"Detection signals: {len(result.detections)}")
+    print(f"Assessment: {result.assessment.assessment} ({result.assessment.confidence})")
+    print(f"Risk: {result.risk.overall_risk} ({result.risk.confidence})")
+    print(f"Escalation: {result.escalation.level}")
+    print(f"Response: {result.response.action}")
+    print(f"Case status: {result.case.status}")
+    print(f"Closure ready: {result.closure_ready}")
+    print("Decision trail:")
+    for event in result.case.decision_trail:
+        print(f"  - {event.timestamp.isoformat()} | {event.action} | {event.rationale}")
+    if result.case.evidence_gaps:
+        print("Evidence gaps:")
+        for gap in result.case.evidence_gaps:
+            print(f"  - {gap}")
+
+
 def run_module(module: str) -> None:
     """Run one toolkit module while retaining legacy entry points."""
     if module == "log":
@@ -59,10 +92,10 @@ def run_module(module: str) -> None:
         for event in log_parser.parse_auth_log(): print(event)
     elif module == "firewall":
         from parsers import firewall_parser
-        for event in firewall_parser.parse_firewall_log(): print(event)
+        firewall_parser.parse_firewall_log()
     elif module == "web":
         from parsers import web_parser
-        for event in web_parser.parse_web_log(): print(event)
+        web_parser.parse_web_log()
     elif module == "correlate":
         from parsers import correlate_logs
         correlate_logs.correlate_logs()
@@ -72,20 +105,21 @@ def run_module(module: str) -> None:
     elif module == "assessment": run_assessment()
     elif module == "response": run_response()
     elif module == "case": run_case()
+    elif module == "pipeline": run_pipeline()
     else: raise ValueError("unknown module")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="SOC Toolkit CLI")
-    parser.add_argument("--module", choices=("log", "firewall", "web", "correlate", "reputation", "assessment", "response", "case"), help="Module to run")
+    parser.add_argument("--module", choices=("log", "firewall", "web", "correlate", "reputation", "assessment", "response", "case", "pipeline"), help="Module to run")
     args = parser.parse_args()
     if args.module:
         run_module(args.module)
         return
     print("Select a module to run:")
-    options = {"1":"log", "2":"firewall", "3":"web", "4":"correlate", "5":"reputation", "6":"assessment", "7":"response", "8":"case"}
+    options = {"1":"log", "2":"firewall", "3":"web", "4":"correlate", "5":"reputation", "6":"assessment", "7":"response", "8":"case", "9":"pipeline"}
     for number, module in options.items(): print(f"  {number}. {module}")
-    selected = options.get(input("Enter number (1–8): ").strip())
+    selected = options.get(input("Enter number (1–9): ").strip())
     if selected: run_module(selected)
     else: print("[!] Invalid selection")
 
