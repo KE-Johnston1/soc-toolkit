@@ -1,6 +1,6 @@
 # SOC Toolkit
 
-A defensive Python toolkit for turning synthetic security logs into structured observations, detection signals, evidence correlation, and analyst assessments.
+A defensive Python toolkit for turning synthetic security logs into structured observations, detection signals, evidence correlation, analyst assessment, risk context, escalation recommendations, and controlled response decisions.
 
 ## Analyst workflow
 
@@ -15,10 +15,18 @@ Evidence correlation
   ↓
 Analyst assessment
   ↓
-Recommended action
+Risk context
+  ↓
+Escalation recommendation
+  ↓
+Response decision
+  ↓
+Case lifecycle / decision trail
+  ↓
+Closure and lessons learned
 ```
 
-The project deliberately separates **detection** from **assessment**. A rule firing is an investigation lead, not proof of brute force, compromise, malicious intent, or an incident.
+The project deliberately separates **detection**, **assessment**, **risk**, **escalation**, and **response**. A rule firing is an investigation lead, not proof of brute force, compromise, malicious intent, or an incident.
 
 ## Current capabilities
 
@@ -29,70 +37,83 @@ The project deliberately separates **detection** from **assessment**. A rule fir
 - Analyst assessment states: `Expected`, `Requires Investigation`, `Insufficient Evidence`, and `Security Concern`
 - Evidence items with source, observation, confidence, and relationship (`direct`, `corroborating`, `contradicting`)
 - Explicit evidence-gap tracking and recommended next actions
-- Unit tests for validation, parsing, detection, correlation, and analyst assessment
-- Legacy parser entry points retained while the toolkit is being migrated to the structured workflow
+- Organisational risk context covering asset criticality, account privilege, data sensitivity, likelihood, business/financial impact, CVE relevance, CVSS severity, and legal/privacy considerations
+- Evidence-based escalation recommendations with separate specialist and stakeholder routing
+- Controlled response actions: monitor, investigate, escalate, contain, remediate, recover, and close
+- Case lifecycle with validated status transitions and an auditable analyst decision trail
+- Unit tests across validation, parsing, detection, correlation, assessment, risk, escalation, response, and case management
 
-## Analyst assessment principles
-
-The assessment layer asks what is actually established before closing a case. Relevant checks include:
-
-- asset or account ownership
-- authorisation for the activity
-- expected activity or baseline
-- exact timing
-- network evidence
-- endpoint/post-event evidence
-- maintenance, deployment, change, or security-testing context
-- post-authentication activity for privileged accounts
-- contradictory evidence
+## Analyst principles
 
 Missing context is recorded as an evidence gap rather than silently inferred. Contradictory evidence prevents an `Expected` closure until it is resolved.
 
-## Example
+Risk is organisational context, not a compromise verdict. CVSS describes vulnerability severity; it does not prove exploitation or automatically determine organisational risk. Financial impact is labelled by basis rather than presented as invented precision.
 
-Run the structured analyst assessment against the synthetic authentication log:
+Escalation is evidence-based. Severity alone does not determine escalation. Privileged accounts, multiple affected accounts, malware, persistence, command-and-control, potential exfiltration, recurring related alerts, or possible sensitive-data/legal implications can justify additional review depending on the evidence.
+
+Response is controlled rather than automatic. `Insufficient Evidence` leads to investigation, not closure. Containment requires explicit authorisation and a safe execution condition. Closure requires an `Expected` assessment, no remaining evidence gaps, and a documented closure rationale.
+
+## Examples
+
+Run the structured analyst assessment:
 
 ```bash
 python main.py --module assessment
 ```
 
-The command reports the detection rule, current assessment, confidence, classification, recommended action, rationale, and remaining evidence gaps.
+Run a response recommendation:
+
+```bash
+python main.py --module response
+```
+
+Run a case-lifecycle demonstration:
+
+```bash
+python main.py --module case
+```
+
+Run the test suite:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+See [`docs/risk-and-escalation.md`](docs/risk-and-escalation.md) and [`docs/response-and-case-management.md`](docs/response-and-case-management.md) for the decision models.
 
 ## Project structure
 
 ```text
 soc_toolkit/
-├── __init__.py               # Package marker
 ├── assessment.py             # Evidence-first analyst assessment
-└── models.py                 # Validated structured event model
+├── case_management.py       # Controlled case lifecycle and decision trail
+├── escalation.py             # Evidence-based escalation recommendations
+├── models.py                 # Validated structured event model
+└── response.py               # Controlled response decisions
+
+risk.py / escalation.py       # Risk and escalation decision layers
 
 detections/
 └── authentication.py         # Repeated SSH authentication detection
 
 parsers/
-├── auth_parser.py            # Structured SSH authentication parser
-├── firewall_parser.py        # Synthetic firewall parser
-├── web_parser.py             # Synthetic web parser
-└── log_parser.py             # Compatibility wrapper
+├── auth_parser.py
+├── firewall_parser.py
+├── web_parser.py
+└── log_parser.py
 
 tests/
 ├── test_models_and_auth.py
-└── test_assessment.py
+├── test_assessment.py
+├── test_risk_escalation.py
+└── test_response_case_management.py
 ```
 
 Additional legacy modules and sample logs remain in the repository while the refactor is completed.
 
 ## Safety and scope
 
-This repository is an educational defensive-security project using synthetic/sample log data. It does not perform live scanning, exploitation, credential attacks, packet capture, or automated containment. Results should be treated as analyst hypotheses and evidence summaries, not authoritative incident conclusions.
-
-## Development
-
-Run the test suite with:
-
-```bash
-python -m unittest discover -s tests -v
-```
+This repository is an educational defensive-security project using synthetic/sample log data. It does not perform live scanning, exploitation, credential attacks, packet capture, or automated containment. Results should be treated as analyst hypotheses and evidence summaries, not authoritative incident conclusions. Legal/privacy fields are workflow referral indicators, not legal advice or breach determinations.
 
 ## Author
 
