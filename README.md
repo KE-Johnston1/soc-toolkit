@@ -62,10 +62,13 @@ The command reports the detection rule, current assessment, confidence, classifi
 
 ```text
 soc_toolkit/
+├── __init__.py               # Package marker
 ├── assessment.py             # Evidence-first analyst assessment
-├── models.py                 # Validated structured event model
+└── models.py                 # Validated structured event model
+
 detections/
 └── authentication.py         # Repeated SSH authentication detection
+
 parsers/
 ├── auth_parser.py            # Structured SSH authentication parser
 ├── firewall_parser.py        # Synthetic firewall parser
