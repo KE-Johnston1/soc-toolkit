@@ -1,17 +1,40 @@
-def parse_firewall_log():
-    try:
-        with open("logs/firewall.log", "r") as file:
-            lines = file.readlines()
-            blocked_ssh = [line for line in lines if "port 22" in line]
-            if blocked_ssh:
-                print("[!] Firewall blocked SSH brute force attempts:")
-                for line in blocked_ssh:
-                    print("    " + line.strip())
-            else:
-                print("[✓] No SSH-related blocks detected")
-    except FileNotFoundError:
-        print("[!] firewall.log not found")
+"""Parse synthetic firewall observations into structured SOC events."""
 
-if __name__ == "__main__":
-    parse_firewall_log()
+from pathlib import Path
+import re
 
+from soc_toolkit.models import LogEvent
+
+_FIREWALL_PATTERN = re.compile(
+    r"^(?P<timestamp>[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+"
+    r"firewall:\s+Blocked connection from (?P<source_ip>\S+) to port (?P<port>\d+)"
+)
+
+
+def parse_firewall_log(path: str | Path = "logs/firewall.log") -> list[LogEvent]:
+    """Parse firewall block records without assigning malicious intent."""
+    events: list[LogEvent] = []
+    for raw_line in Path(path).read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        match = _FIREWALL_PATTERN.match(line)
+        if not match:
+            continue
+
+        events.append(
+            LogEvent(
+                timestamp=None,
+                source_ip=match.group("source_ip"),
+                destination_ip=None,
+                source_port=None,
+                destination_port=int(match.group("port")),
+                protocol="tcp",
+                event_type="firewall",
+                account=None,
+                action="blocked",
+                message=line,
+                evidence_source=str(path),
+                raw_line=raw_line,
+                metadata={"syslog_timestamp": match.group("timestamp")},
+            )
+        )
+    return events
