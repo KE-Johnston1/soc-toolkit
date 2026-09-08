@@ -6,9 +6,9 @@ from soc_toolkit.pipeline import PipelineInput, run_pipeline
 
 class PipelineTests(unittest.TestCase):
     def setUp(self):
-        self.log = str(Path(__file__).parents[1] / "logs" / "auth.log")
+        self.log = str(Path(__file__).parents[1] / "logs" / "pipeline-auth.log")
 
-    def test_unresolved_auth_alert_flows_to_tier_two(self):
+    def test_unresolved_auth_alert_stays_investigative(self):
         result = run_pipeline(
             PipelineInput(
                 case_id="CASE-PIPE-001",
@@ -45,6 +45,7 @@ class PipelineTests(unittest.TestCase):
                 post_auth_reviewed=True,
                 privileged_account=True,
                 malware_evidence=True,
+                contradictory_evidence=True,
                 containment_authorized=True,
                 containment_safe=True,
                 asset_criticality="High",
@@ -55,7 +56,7 @@ class PipelineTests(unittest.TestCase):
                 financial_impact="Unknown",
             )
         )
-        self.assertEqual(result.assessment.assessment, "Expected")
+        self.assertEqual(result.assessment.assessment, "Requires Investigation")
         self.assertEqual(result.escalation.level, "Incident Response")
         self.assertEqual(result.response.action, "Contain")
         self.assertFalse(result.closure_ready)
