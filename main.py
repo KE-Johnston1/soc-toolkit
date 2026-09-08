@@ -2,6 +2,7 @@
 
 import argparse
 from datetime import datetime, timezone
+from pathlib import Path
 
 
 def run_assessment() -> None:
@@ -50,6 +51,26 @@ def run_case() -> None:
     print(f"Case: {case.case_id}")
     print(f"Status: {case.status}")
     print(f"Decision trail entries: {len(case.decision_trail)}")
+
+
+def run_case_pack() -> None:
+    """Load the Phase 1 multi-source case and display its evidence correlation."""
+    from soc_toolkit.case_pipeline import load_multi_source_case
+
+    case_dir = Path("cases") / "CASE-MULTI-001"
+    result = load_multi_source_case(case_dir)
+    print(f"Case: {result.case_id}")
+    print(f"Alert: {result.alert_id}")
+    print(f"Normalised events: {len(result.events)}")
+    print(f"Evidence sources: {len({event.evidence_source for event in result.events})}")
+    for correlation in result.correlations:
+        print(
+            f"Correlation: {correlation.source_ip} | "
+            f"{correlation.assessment} ({correlation.confidence}) | "
+            f"sources={len(correlation.evidence_sources)} | "
+            f"temporal={correlation.temporal_correlation}"
+        )
+        print(f"  Rationale: {correlation.rationale}")
 
 
 def run_pipeline() -> None:
@@ -105,21 +126,22 @@ def run_module(module: str) -> None:
     elif module == "assessment": run_assessment()
     elif module == "response": run_response()
     elif module == "case": run_case()
+    elif module == "case-pack": run_case_pack()
     elif module == "pipeline": run_pipeline()
     else: raise ValueError("unknown module")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="SOC Toolkit CLI")
-    parser.add_argument("--module", choices=("log", "firewall", "web", "correlate", "reputation", "assessment", "response", "case", "pipeline"), help="Module to run")
+    parser.add_argument("--module", choices=("log", "firewall", "web", "correlate", "reputation", "assessment", "response", "case", "case-pack", "pipeline"), help="Module to run")
     args = parser.parse_args()
     if args.module:
         run_module(args.module)
         return
     print("Select a module to run:")
-    options = {"1":"log", "2":"firewall", "3":"web", "4":"correlate", "5":"reputation", "6":"assessment", "7":"response", "8":"case", "9":"pipeline"}
+    options = {"1":"log", "2":"firewall", "3":"web", "4":"correlate", "5":"reputation", "6":"assessment", "7":"response", "8":"case", "9":"case-pack", "10":"pipeline"}
     for number, module in options.items(): print(f"  {number}. {module}")
-    selected = options.get(input("Enter number (1–9): ").strip())
+    selected = options.get(input("Enter number (1–10): ").strip())
     if selected: run_module(selected)
     else: print("[!] Invalid selection")
 
