@@ -13,5 +13,6 @@ Phase 1 is complete when the reproducible multi-source case demonstrates the fol
 - [x] Response decisions require appropriate authorization and safety checks for disruptive actions.
 - [x] Case lifecycle records an auditable decision trail.
 - [x] Tests cover the integrated multi-source case and hypothesis layer.
+- [x] The multi-source fixture contains enough authentication-failure evidence to exercise the configured detection threshold.
 
 The next phase should add richer evidence modelling and investigation context rather than bypassing these controls with more aggressive detection claims.
