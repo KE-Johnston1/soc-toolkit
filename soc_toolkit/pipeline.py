@@ -11,6 +11,8 @@ from soc_toolkit.case_loader import CasePack, load_case_pack
 from soc_toolkit.case_management import CaseRecord, transition_case
 from soc_toolkit.correlation import CorrelationResult, correlate_events
 from soc_toolkit.escalation import EscalationDecision, EscalationInput, recommend_escalation
+from soc_toolkit.hypotheses import Hypothesis
+from soc_toolkit.hypothesis_case import build_case_hypotheses
 from soc_toolkit.response import ResponseDecision, ResponseInput, recommend_response
 from soc_toolkit.risk import RiskAssessment, RiskInput, assess_risk
 from soc_toolkit.models import LogEvent
@@ -64,6 +66,7 @@ class CaseSummary:
     correlated_sources: tuple[str, ...]
     correlations: tuple[CorrelationResult, ...]
     events: tuple[LogEvent, ...]
+    hypotheses: tuple[Hypothesis, ...]
     assessment: AnalystAssessment
     risk: RiskAssessment
     escalation: EscalationDecision
@@ -95,6 +98,7 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
     auth_events = tuple(event for event in events if event.event_type.startswith("authentication_"))
     detections = tuple(detect_repeated_auth_failures(list(auth_events)))
     correlations = tuple(correlate_events(events, window=timedelta(minutes=5)))
+    hypotheses = build_case_hypotheses(events, correlations)
 
     evidence: list[EvidenceItem] = []
     for detection in detections:
@@ -198,7 +202,7 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
         record,
         "Investigating",
         actor_role="SOC Analyst",
-        rationale="Detection and contextual evidence require an evidence-backed assessment before disruptive response or closure.",
+        rationale="Detection, correlated evidence, and competing hypotheses require an evidence-backed assessment before disruptive response or closure.",
         evidence_source="synthetic case pipeline",
         confidence=assessment.confidence,
         timestamp=case.created_at + timedelta(minutes=1),
@@ -231,6 +235,7 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
         correlated_sources=tuple(correlated_sources),
         correlations=correlations,
         events=events,
+        hypotheses=hypotheses,
         assessment=assessment,
         risk=risk,
         escalation=escalation,
