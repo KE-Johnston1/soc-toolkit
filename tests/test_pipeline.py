@@ -1,14 +1,27 @@
+from datetime import timezone
 from pathlib import Path
 import unittest
 
+from detections.authentication import detect_repeated_auth_failures
+from parsers.auth_parser import parse_auth_log
 from soc_toolkit.pipeline import PipelineInput, run_pipeline
 
 
 class PipelineTests(unittest.TestCase):
     def setUp(self):
-        self.log = str(Path(__file__).parents[1] / "logs" / "auth.log")
+        self.log = str(Path(__file__).parents[1] / "logs" / "pipeline-auth.log")
 
-    def test_unresolved_auth_alert_flows_to_tier_two(self):
+    def test_pipeline_fixture_produces_detection_signal(self):
+        events = parse_auth_log(self.log, year=2026, tz=timezone.utc)
+        self.assertEqual(len(events), 5)
+        self.assertTrue(all(event.event_type == "authentication_failure" for event in events))
+        detections = detect_repeated_auth_failures(events)
+        self.assertEqual(len(detections), 1)
+        self.assertEqual(detections[0].failure_count, 5)
+        self.assertEqual(detections[0].source_ip, "192.168.1.101")
+        self.assertEqual(detections[0].account, "admin")
+
+    def test_unresolved_auth_alert_stays_investigative(self):
         result = run_pipeline(
             PipelineInput(
                 case_id="CASE-PIPE-001",
@@ -45,6 +58,7 @@ class PipelineTests(unittest.TestCase):
                 post_auth_reviewed=True,
                 privileged_account=True,
                 malware_evidence=True,
+                contradictory_evidence=True,
                 containment_authorized=True,
                 containment_safe=True,
                 asset_criticality="High",
@@ -55,7 +69,7 @@ class PipelineTests(unittest.TestCase):
                 financial_impact="Unknown",
             )
         )
-        self.assertEqual(result.assessment.assessment, "Expected")
+        self.assertEqual(result.assessment.assessment, "Requires Investigation")
         self.assertEqual(result.escalation.level, "Incident Response")
         self.assertEqual(result.response.action, "Contain")
         self.assertFalse(result.closure_ready)
