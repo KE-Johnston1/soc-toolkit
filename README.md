@@ -45,15 +45,16 @@ The demonstration intentionally leaves ownership, authorization, timing, network
 - Structured `LogEvent` model with IP, port, protocol, timestamp, account, and evidence-source validation
 - SSH authentication parsing without inventing missing year/timezone information
 - Evidence-aware repeated authentication detection with configurable threshold and time window
+- Cross-source correlation with explicit temporal-correlation handling
 - Analyst assessment states: `Expected`, `Requires Investigation`, `Insufficient Evidence`, and `Security Concern`
 - Evidence items with source, observation, confidence, and relationship (`direct`, `corroborating`, `contradicting`)
 - Explicit evidence-gap tracking and recommended next actions
 - Organisational risk context covering asset criticality, account privilege, data sensitivity, likelihood, business/financial impact, CVE relevance, CVSS severity, and legal/privacy considerations
-- Evidence-based escalation recommendations with specialist and stakeholder routing
+- Evidence-based escalation recommendations with separate specialist and stakeholder routing
 - Controlled response actions: monitor, investigate, escalate, contain, remediate, recover, and close
 - Case lifecycle with validated status transitions and an auditable analyst decision trail
 - End-to-end synthetic case pipeline combining the decision layers into one reproducible analyst workflow
-- Unit tests across validation, parsing, detection, assessment, risk, escalation, response, case management, and pipeline behaviour
+- Unit tests across validation, parsing, detection, correlation, assessment, risk, escalation, response, case management, and pipeline behaviour
 
 ## Analyst principles
 
@@ -61,7 +62,7 @@ Missing context is recorded as an evidence gap rather than silently inferred. Co
 
 Risk is organisational context, not a compromise verdict. CVSS describes vulnerability severity; it does not prove exploitation or automatically determine organisational risk. Financial impact is labelled by basis rather than presented as invented precision.
 
-Escalation is evidence-based. Severity alone does not determine escalation. Privileged accounts, multiple affected accounts, malware, persistence, command-and-control, potential exfiltration, recurring related alerts, or possible sensitive-data/legal implications can justify additional review depending on the evidence.
+Escalation is evidence-based. Severity alone does not determine escalation. Privileged accounts, multiple affected accounts, malware, persistence, command and control, potential exfiltration, recurring related alerts, or possible sensitive-data/legal implications can justify additional review depending on the evidence.
 
 Response is controlled rather than automatic. `Insufficient Evidence` leads to investigation, not closure. Containment requires explicit authorisation and a safe execution condition. Closure requires an `Expected` assessment, no remaining evidence gaps, and a documented closure rationale.
 
