@@ -60,7 +60,7 @@ def run_pipeline() -> None:
         PipelineInput(
             case_id="CASE-SSH-001",
             alert_id="ALERT-SSH-001",
-            auth_log_path="logs/auth.log",
+            auth_log_path="logs/pipeline-auth.log",
             privileged_account=True,
             asset_criticality="High",
             account_privilege="High",
