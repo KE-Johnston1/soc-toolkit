@@ -10,6 +10,7 @@ from soc_toolkit.pipeline import PipelineInput, run_pipeline
 class PipelineTests(unittest.TestCase):
     def setUp(self):
         self.log = str(Path(__file__).parents[1] / "logs" / "pipeline-auth.log")
+        self.case = str(Path(__file__).parents[1] / "cases" / "CASE-MULTI-001")
 
     def test_pipeline_fixture_produces_detection_signal(self):
         events = parse_auth_log(self.log, year=2026, tz=timezone.utc)
@@ -20,6 +21,29 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(detections[0].failure_count, 5)
         self.assertEqual(detections[0].source_ip, "192.168.1.101")
         self.assertEqual(detections[0].account, "admin")
+
+    def test_multisource_case_pack_flows_into_pipeline_correlation(self):
+        result = run_pipeline(
+            PipelineInput(
+                case_id="CASE-MULTI-001",
+                alert_id="ALERT-AUTH-001",
+                case_path=self.case,
+                privileged_account=True,
+                asset_criticality="High",
+                account_privilege="High",
+                likelihood="Medium",
+                business_impact="High",
+            )
+        )
+        self.assertTrue(result.detections)
+        self.assertEqual(len(result.events), 10)
+        self.assertEqual(len(result.correlated_sources), 3)
+        correlation = next(item for item in result.correlations if item.source_ip == "192.168.1.101")
+        self.assertTrue(correlation.temporal_correlation)
+        self.assertEqual(len(correlation.evidence_sources), 3)
+        self.assertEqual(result.assessment.assessment, "Insufficient Evidence")
+        self.assertEqual(result.response.action, "Investigate")
+        self.assertFalse(result.closure_ready)
 
     def test_unresolved_auth_alert_stays_investigative(self):
         result = run_pipeline(
@@ -40,7 +64,7 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(result.response.action, "Investigate")
         self.assertEqual(result.case.status, "Investigating")
         self.assertFalse(result.closure_ready)
-        self.assertIn("authentication log", result.correlated_sources)
+        self.assertIn("pipeline-auth.log", result.correlated_sources[0])
 
     def test_stronger_synthetic_evidence_can_reach_containment(self):
         result = run_pipeline(

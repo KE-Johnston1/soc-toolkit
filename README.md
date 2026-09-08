@@ -40,10 +40,24 @@ python main.py --module pipeline
 
 The demonstration intentionally leaves ownership, authorization, timing, network, endpoint, and change/testing verification incomplete. The resulting case therefore remains investigative rather than being presented as a confirmed compromise.
 
+## Phase 1: multi-source investigation case
+
+The first Phase 1 slice introduces a reproducible case pack at `cases/CASE-MULTI-001/` containing alert metadata plus authentication, firewall, and web evidence. The case-pack loader normalises the supported logs into structured `LogEvent` objects and the correlation layer checks whether the same source appears across multiple evidence sources within a configured time window.
+
+Run the Phase 1 tests with:
+
+```bash
+python -m unittest tests.test_case_loader -v
+```
+
+See [`docs/phase1-multisource-case.md`](docs/phase1-multisource-case.md) for the evidence flow and current limitations. Correlation is supporting evidence only; a shared source IP does not establish attribution or malicious intent.
+
 ## Current capabilities
 
 - Structured `LogEvent` model with IP, port, protocol, timestamp, account, and evidence-source validation
 - SSH authentication parsing without inventing missing year/timezone information
+- Structured synthetic firewall and web event parsing
+- Reproducible multi-source case packs with alert metadata and evidence files
 - Evidence aware repeated authentication detection with configurable threshold and time window
 - Cross source correlation with explicit temporal-correlation handling
 - Analyst assessment states: `Expected`, `Requires Investigation`, `Insufficient Evidence`, and `Security Concern`
@@ -98,14 +112,16 @@ Run the test suite:
 python -m unittest discover -s tests -v
 ```
 
-See [`docs/risk-and-escalation.md`](docs/risk-and-escalation.md) and [`docs/response-and-case-management.md`](docs/response-and-case-management.md) for the decision models.
+See [`docs/risk-and-escalation.md`](docs/risk-and-escalation.md), [`docs/response-and-case-management.md`](docs/response-and-case-management.md), and [`docs/phase1-multisource-case.md`](docs/phase1-multisource-case.md) for the decision models.
 
 ## Project structure
 
 ```text
 soc_toolkit/
 ├── assessment.py             # Evidence-first analyst assessment
-├── case_management.py       # Controlled case lifecycle and decision trail
+├── case_loader.py            # Reproducible synthetic case-pack loader
+├── case_management.py        # Controlled case lifecycle and decision trail
+├── correlation.py            # Cross-source temporal correlation
 ├── escalation.py             # Evidence-based escalation recommendations
 ├── models.py                 # Validated structured event model
 ├── pipeline.py               # End-to-end synthetic case workflow
@@ -117,11 +133,20 @@ detections/
 
 parsers/
 ├── auth_parser.py
+├── firewall_events.py
 ├── firewall_parser.py
-├── web_parser.py
-└── log_parser.py
+├── log_parser.py
+└── web_events.py
+
+cases/
+└── CASE-MULTI-001/           # Reproducible auth/firewall/web case pack
+    ├── alert.json
+    ├── auth.log
+    ├── firewall.log
+    └── web.log
 
 tests/
+├── test_case_loader.py
 ├── test_models_and_auth.py
 ├── test_assessment.py
 ├── test_risk_escalation.py

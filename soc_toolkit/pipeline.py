@@ -2,21 +2,26 @@
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from detections.authentication import DetectionResult, detect_repeated_auth_failures
 from parsers.auth_parser import parse_auth_log
 from soc_toolkit.assessment import AssessmentInput, AnalystAssessment, EvidenceItem, assess_detection
+from soc_toolkit.case_loader import CasePack, load_case_pack
 from soc_toolkit.case_management import CaseRecord, transition_case
+from soc_toolkit.correlation import CorrelationResult, correlate_events
 from soc_toolkit.escalation import EscalationDecision, EscalationInput, recommend_escalation
 from soc_toolkit.response import ResponseDecision, ResponseInput, recommend_response
 from soc_toolkit.risk import RiskAssessment, RiskInput, assess_risk
+from soc_toolkit.models import LogEvent
 
 
 @dataclass(frozen=True)
 class PipelineInput:
     case_id: str
     alert_id: str
-    auth_log_path: str
+    auth_log_path: str = "logs/pipeline-auth.log"
+    case_path: str | None = None
     owner_verified: bool = False
     authorization_verified: bool = False
     expected_activity_verified: bool = False
@@ -57,6 +62,8 @@ class CaseSummary:
     case: CaseRecord
     detections: tuple[DetectionResult, ...]
     correlated_sources: tuple[str, ...]
+    correlations: tuple[CorrelationResult, ...]
+    events: tuple[LogEvent, ...]
     assessment: AnalystAssessment
     risk: RiskAssessment
     escalation: EscalationDecision
@@ -64,25 +71,47 @@ class CaseSummary:
     closure_ready: bool
 
 
+def _load_events(case: PipelineInput) -> tuple[LogEvent, ...]:
+    if case.case_path:
+        pack: CasePack = load_case_pack(case.case_path)
+        if pack.case_id != case.case_id or pack.alert_id != case.alert_id:
+            raise ValueError("pipeline identifiers do not match the case-pack alert")
+        return pack.events
+
+    path = Path(case.auth_log_path)
+    if not path.exists():
+        raise FileNotFoundError(f"authentication log not found: {path}")
+    return tuple(parse_auth_log(path, year=case.created_at.year, tz=case.created_at.tzinfo))
+
+
 def run_pipeline(case: PipelineInput) -> CaseSummary:
-    """Run one synthetic authentication case through the full decision path."""
+    """Run one synthetic case through detection, correlation and decision layers."""
     if case.created_at.tzinfo is None:
         raise ValueError("created_at must be timezone-aware")
+    if not case.case_id.strip() or not case.alert_id.strip():
+        raise ValueError("case_id and alert_id cannot be blank")
 
-    events = parse_auth_log(case.auth_log_path, year=case.created_at.year, tz=case.created_at.tzinfo)
-    detections = tuple(detect_repeated_auth_failures(events))
+    events = _load_events(case)
+    auth_events = tuple(event for event in events if event.event_type.startswith("authentication_"))
+    detections = tuple(detect_repeated_auth_failures(list(auth_events)))
+    correlations = tuple(correlate_events(events, window=timedelta(minutes=5)))
 
     evidence: list[EvidenceItem] = []
-    if detections:
-        detection = detections[0]
+    for detection in detections:
         evidence.extend(
             EvidenceItem("authentication detector", item, detection.confidence, "direct")
             for item in detection.evidence
         )
-    if case.network_reviewed:
-        evidence.append(EvidenceItem("network review", "Related network evidence was reviewed.", "Medium", "corroborating"))
-    if case.endpoint_reviewed:
-        evidence.append(EvidenceItem("endpoint review", "Related endpoint evidence was reviewed.", "Medium", "corroborating"))
+    for correlation in correlations:
+        if len(correlation.evidence_sources) >= 2:
+            evidence.append(
+                EvidenceItem(
+                    "cross-source correlation",
+                    correlation.rationale,
+                    correlation.confidence,
+                    "corroborating",
+                )
+            )
 
     assessment = assess_detection(
         AssessmentInput(
@@ -91,7 +120,7 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
             authorization_verified=case.authorization_verified,
             expected_activity_verified=case.expected_activity_verified,
             timing_verified=case.timing_verified,
-            network_reviewed=case.network_reviewed,
+            network_reviewed=case.network_reviewed or any(e.event_type == "firewall_block" for e in events),
             endpoint_reviewed=case.endpoint_reviewed,
             change_or_testing_checked=case.change_or_testing_checked,
             post_auth_reviewed=case.post_auth_reviewed,
@@ -195,16 +224,13 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
             timestamp=case.created_at + timedelta(minutes=2),
         )
 
-    correlated_sources = ["authentication log"]
-    if case.network_reviewed:
-        correlated_sources.append("network evidence")
-    if case.endpoint_reviewed:
-        correlated_sources.append("endpoint evidence")
-
+    correlated_sources = sorted({event.evidence_source for event in events})
     return CaseSummary(
         case=record,
         detections=detections,
-        correlated_sources=tuple(sorted(correlated_sources)),
+        correlated_sources=tuple(correlated_sources),
+        correlations=correlations,
+        events=events,
         assessment=assessment,
         risk=risk,
         escalation=escalation,

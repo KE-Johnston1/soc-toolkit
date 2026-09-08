@@ -1,4 +1,4 @@
-"""Parse synthetic firewall observations into structured events."""
+"""Parse synthetic firewall observations into structured SOC events."""
 
 from datetime import datetime, timezone
 from pathlib import Path
@@ -8,21 +8,21 @@ from soc_toolkit.models import LogEvent
 
 _PATTERN = re.compile(
     r"^(?P<timestamp>[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+"
-    r"firewall:\s+Blocked connection from (?P<source_ip>[^\s]+) to port (?P<destination_port>\d+)"
+    r"firewall:\s+(?P<action>Blocked connection)\s+from\s+"
+    r"(?P<source_ip>[^\s]+)\s+to\s+port\s+(?P<destination_port>\d+)"
 )
 
 
-def parse_firewall_log(path: str | Path) -> list[LogEvent]:
-    """Return validated firewall observations without inferring destination IP or protocol."""
+def parse_firewall_log(path: str | Path, *, year: int, tz: timezone) -> list[LogEvent]:
     events: list[LogEvent] = []
     source = str(path)
     for raw_line in Path(path).read_text(encoding="utf-8").splitlines():
         match = _PATTERN.match(raw_line)
         if not match:
             continue
-        timestamp = datetime.strptime(match.group("timestamp"), "%b %d %H:%M:%S").replace(
-            year=2026, tzinfo=timezone.utc
-        )
+        timestamp = datetime.strptime(
+            f"{year} {match.group('timestamp')}", "%Y %b %d %H:%M:%S"
+        ).replace(tzinfo=tz)
         events.append(
             LogEvent(
                 timestamp=timestamp,
@@ -37,7 +37,6 @@ def parse_firewall_log(path: str | Path) -> list[LogEvent]:
                 message=raw_line,
                 evidence_source=source,
                 raw_line=raw_line,
-                metadata={"disposition": "blocked"},
             )
         )
     return events
