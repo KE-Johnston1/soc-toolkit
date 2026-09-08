@@ -15,7 +15,7 @@ class CasePackTests(unittest.TestCase):
         sources = {event.evidence_source for event in pack.events}
         self.assertEqual(sources, {str(self.case / "auth.log"), str(self.case / "firewall.log"), str(self.case / "web.log")})
         self.assertEqual(pack.case_id, "CASE-MULTI-001")
-        self.assertEqual(len(pack.events), 9)
+        self.assertEqual(len(pack.events), 10)
 
     def test_correlates_same_source_across_multiple_evidence_types(self):
         pack = load_case_pack(self.case)
