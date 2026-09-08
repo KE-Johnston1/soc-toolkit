@@ -1,0 +1,13 @@
+{
+  "case_id": "CASE-MULTI-001",
+  "alert_id": "ALERT-AUTH-001",
+  "title": "Repeated SSH authentication failures",
+  "severity": "High",
+  "detection_rule": "AUTH-REPEATED-FAILURES",
+  "timestamp": "2026-09-08T14:02:01Z",
+  "source_ip": "192.168.1.101",
+  "destination_ip": "10.0.0.10",
+  "account": "admin",
+  "initial_assessment": "Requires Investigation",
+  "note": "The alert is an investigation lead, not proof of brute force or compromise."
+}
