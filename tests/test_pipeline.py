@@ -36,7 +36,7 @@ class PipelineTests(unittest.TestCase):
             )
         )
         self.assertTrue(result.detections)
-        self.assertEqual(len(result.events), 9)
+        self.assertEqual(len(result.events), 10)
         self.assertEqual(len(result.correlated_sources), 3)
         correlation = next(item for item in result.correlations if item.source_ip == "192.168.1.101")
         self.assertTrue(correlation.temporal_correlation)
