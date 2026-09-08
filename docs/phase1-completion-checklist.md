@@ -14,5 +14,6 @@ Phase 1 is complete when the reproducible multi-source case demonstrates the fol
 - [x] Case lifecycle records an auditable decision trail.
 - [x] Tests cover the integrated multi-source case and hypothesis layer.
 - [x] The multi-source fixture contains enough authentication-failure evidence to exercise the configured detection threshold.
+- [x] Python test workflow and CodeQL analysis are included for the Phase 1 implementation.
 
-The next phase should add richer evidence modelling and investigation context rather than bypassing these controls with more aggressive detection claims.
+Phase 2 should add richer evidence modelling and investigation context rather than bypassing these controls with more aggressive detection claims.
