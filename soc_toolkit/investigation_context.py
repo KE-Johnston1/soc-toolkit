@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from typing import Literal
 import re
 
+from soc_toolkit.scenario_context import ScenarioContext
+
 Level = Literal["Unknown", "Low", "Medium", "High"]
 ValueBasis = Literal["Unknown", "Observed", "Derived", "Estimated"]
 AttributionConfidence = Literal["Unknown", "Low", "Medium", "High"]
@@ -86,6 +88,7 @@ class InvestigationContext:
     impact: ImpactContext = ImpactContext()
     legal_privacy: LegalPrivacyContext = LegalPrivacyContext()
     attribution: AttributionContext = AttributionContext(rationale="Attribution has not been established from the available evidence.")
+    scenario: ScenarioContext = ScenarioContext()
 
 
 def assess_vulnerability(context: VulnerabilityContext) -> tuple[str, tuple[str, ...]]:
