@@ -11,7 +11,9 @@ Normalisation
   ↓
 Detection signal
   ↓
-Evidence correlation
+Evidence provenance
+  ↓
+Cross-source correlation
   ↓
 Competing hypotheses
   ↓
@@ -28,7 +30,15 @@ Case lifecycle / decision trail
 Closure and lessons learned
 ```
 
-The project deliberately separates **detection**, **correlation**, **hypotheses**, **assessment**, **risk**, **escalation**, and **response**. A rule firing is an investigation lead, not proof of brute force, compromise, malicious intent, or an incident.
+The project deliberately separates **detection**, **correlation**, **evidence provenance**, **hypotheses**, **assessment**, **risk**, **escalation**, and **response**. A rule firing is an investigation lead, not proof of brute force, compromise, malicious intent, or an incident.
+
+## Phase 2: evidence context and provenance
+
+Phase 2 begins by making evidence provenance explicit. `soc_toolkit/evidence.py` distinguishes `observed`, `correlated`, `inferred`, `hypothesis`, and `unknown` evidence. This prevents an analyst narrative from silently turning a relationship or inference into a fact.
+
+The end-to-end pipeline now exposes typed `EvidenceRecord` objects and an `EvidenceSummary`. The existing multi-source case records parsed authentication, firewall, and web events as direct observations and records the cross-source relationship separately as correlated evidence.
+
+See [`docs/phase2-evidence-context.md`](docs/phase2-evidence-context.md) for the model and safeguards.
 
 ## End-to-end case demonstration
 
@@ -48,20 +58,14 @@ The Phase 1 case pack at `cases/CASE-MULTI-001/` contains alert metadata plus au
 
 The case also carries five explicit competing hypotheses: legitimate administration, credential attack, possible account compromise, misconfigured/automated service, and unknown/novel activity. Evidence is linked to hypotheses as supporting or challenging context; supporting evidence is not treated as proof.
 
-Run the Phase 1 tests with:
-
-```bash
-python -m unittest tests.test_case_loader tests.test_hypothesis_case -v
-```
-
-See [`docs/phase1-multisource-case.md`](docs/phase1-multisource-case.md) and [`docs/phase1-completion-checklist.md`](docs/phase1-completion-checklist.md) for the evidence flow, hypothesis model, completion criteria, and current limitations. Correlation is supporting evidence only; a shared source IP does not establish attribution or malicious intent.
-
 ## Current capabilities
 
 - Structured `LogEvent` model with IP, port, protocol, timestamp, account, and evidence-source validation
 - SSH authentication parsing without inventing missing year/timezone information
 - Structured synthetic firewall and web event parsing
 - Reproducible multi-source case packs with alert metadata and evidence files
+- Typed evidence provenance: `observed`, `correlated`, `inferred`, `hypothesis`, `unknown`
+- Evidence summaries showing direct observation coverage and timestamp coverage
 - Evidence-aware repeated authentication detection with configurable threshold and time window
 - Cross-source correlation with explicit temporal-correlation handling
 - Explicit competing hypotheses with supporting/challenging evidence and uncertainty-aware status
@@ -73,12 +77,14 @@ See [`docs/phase1-multisource-case.md`](docs/phase1-multisource-case.md) and [`d
 - Controlled response actions: monitor, investigate, escalate, contain, remediate, recover, and close
 - Case lifecycle with validated status transitions and an auditable analyst decision trail
 - End-to-end synthetic case pipeline combining the decision layers into one reproducible analyst workflow
-- Unit tests across validation, parsing, detection, correlation, hypotheses, assessment, risk, escalation, response, case management, and pipeline behaviour
+- Unit tests across validation, parsing, detection, correlation, evidence, hypotheses, assessment, risk, escalation, response, case management, and pipeline behaviour
 - CodeQL analysis workflow for Python
 
 ## Analyst principles
 
 Missing context is recorded as an evidence gap rather than silently inferred. Contradictory evidence prevents an `Expected` closure until it is resolved.
+
+Evidence provenance is explicit. `observed` means directly represented by a source; `correlated` means a relationship between observations; `inferred` and `hypothesis` describe analyst reasoning; `unknown` records facts that remain unestablished.
 
 Hypotheses are competing explanations, not conclusions. A hypothesis can be supported, challenged, or unresolved while the overall analyst assessment remains appropriately cautious.
 
@@ -90,28 +96,10 @@ Response is controlled rather than automatic. `Insufficient Evidence` leads to i
 
 ## Examples
 
-Run the structured analyst assessment:
-
-```bash
-python main.py --module assessment
-```
-
 Run the end-to-end case pipeline:
 
 ```bash
 python main.py --module pipeline
-```
-
-Run a response recommendation:
-
-```bash
-python main.py --module response
-```
-
-Run a case-lifecycle demonstration:
-
-```bash
-python main.py --module case
 ```
 
 Run the test suite:
@@ -120,7 +108,7 @@ Run the test suite:
 python -m unittest discover -s tests -v
 ```
 
-See [`docs/risk-and-escalation.md`](docs/risk-and-escalation.md), [`docs/response-and-case-management.md`](docs/response-and-case-management.md), [`docs/phase1-multisource-case.md`](docs/phase1-multisource-case.md), and [`docs/phase1-completion-checklist.md`](docs/phase1-completion-checklist.md) for the decision models.
+See [`docs/risk-and-escalation.md`](docs/risk-and-escalation.md), [`docs/response-and-case-management.md`](docs/response-and-case-management.md), [`docs/phase1-multisource-case.md`](docs/phase1-multisource-case.md), [`docs/phase1-completion-checklist.md`](docs/phase1-completion-checklist.md), and [`docs/phase2-evidence-context.md`](docs/phase2-evidence-context.md) for the decision and evidence models.
 
 ## Project structure
 
@@ -129,9 +117,11 @@ soc_toolkit/
 ├── assessment.py             # Evidence-first analyst assessment
 ├── case_loader.py            # Reproducible synthetic case-pack loader
 ├── case_management.py        # Controlled case lifecycle and decision trail
-├── correlation.py            # Cross-source temporal correlation
+├── correlation.py             # Cross-source temporal correlation
 ├── escalation.py             # Evidence-based escalation recommendations
+├── evidence.py               # Typed evidence provenance
 ├── hypotheses.py             # Competing hypothesis tracking
+├── hypothesis_case.py        # Case-specific hypothesis construction
 ├── models.py                 # Validated structured event model
 ├── pipeline.py               # End-to-end synthetic case workflow
 ├── response.py               # Controlled response decisions
@@ -162,6 +152,7 @@ tests/
 ├── test_assessment.py
 ├── test_risk_escalation.py
 ├── test_response_case_management.py
+├── test_evidence.py
 └── test_pipeline.py
 ```
 
