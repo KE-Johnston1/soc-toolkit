@@ -12,7 +12,7 @@ Log input → Normalisation → Detection signal → Evidence provenance
 → Closure / lessons learned → Quality validation
 ```
 
-The project deliberately separates detection from judgement. A rule firing is an investigation lead, not proof of brute force, compromise, malicious intent, attribution, legal breach, or an incident.
+The project deliberately separates detection from judgement. A rule firing is an investigation lead, not proof of brute force, compromise, malicious intent, legal breach, or attribution.
 
 ## Phase status
 
@@ -21,7 +21,38 @@ The project deliberately separates detection from judgement. A rule firing is an
 - **Phase 3 — Complete:** reproducible scenario case packs and analyst reports covering phishing/impersonation, network/C2/exfiltration investigation, and privileged-account/insider-context investigation.
 - **Phase 4 — Complete:** detection-quality checks, scenario validation, descriptive case metrics, regression coverage, documentation/audit refresh, and explicit limits on synthetic quality metrics.
 - **Phase 5 — Complete:** employment-readiness hardening, security/contributor guidance, dependency-update automation, current GitHub Actions runtimes, and final repository audit controls.
-- **Security audit hardening — In review:** password-spraying detection coverage, immutable GitHub Actions references, and an explicit security-audit record.
+- **Security audit hardening — Complete:** password-spraying detection coverage, immutable GitHub Actions references, and an explicit security-audit record.
+- **Detection engineering layer — Complete:** MITRE ATT&CK mappings, portable Sigma rules, Microsoft Sentinel KQL, Splunk SPL, false-positive guidance, and regression checks for the detection catalogue.
+
+## Detection engineering
+
+The authentication analytics are represented consistently across multiple detection-engineering formats:
+
+```text
+Python analytic
+     ↓
+Sigma specification
+     ↓
+Microsoft Sentinel KQL / Splunk SPL
+     ↓
+MITRE ATT&CK mapping
+     ↓
+Positive + negative validation
+     ↓
+Analyst triage and case handling
+```
+
+The flagship `AUTH-REPEAT-001` analytic evaluates both repeated failures against one account and source-wide failures across multiple accounts. The second view is designed to surface password-spraying investigation leads that a per-account threshold can miss.
+
+### ATT&CK coverage
+
+| Rule | Behaviour | ATT&CK |
+|---|---|---|
+| `AUTH-BASE-001` | Failed SSH authentication | T1110 |
+| `AUTH-REPEAT-001` | Repeated failures against one account | T1110.001 Password Guessing |
+| `AUTH-REPEAT-001` | Repeated failures across multiple accounts | T1110.003 Password Spraying |
+
+Portable rules and SIEM query examples live under [`detections/`](detections/) and are documented in [`docs/detection-engineering.md`](docs/detection-engineering.md).
 
 ## Phase 3 scenario cases
 
@@ -51,10 +82,6 @@ The toolkit now includes controls for the quality of the synthetic investigation
 - regression tests for quality and data validation
 
 These are **training-data quality controls**, not production SOC performance claims.
-
-## Detection engineering highlight
-
-The authentication detector evaluates both repeated failures against one account and source-wide failures across multiple accounts. The second view is designed to surface password-spraying investigation leads that a per-account threshold can miss. Both paths retain explicit confidence and evidence-gap handling.
 
 ## Evidence-first principles
 
@@ -120,14 +147,17 @@ soc_toolkit/
 └── scenario_validation.py
 
 detections/
-└── authentication.py
-
-parsers/
-├── auth_parser.py
-├── firewall_events.py
-├── firewall_parser.py
-├── log_parser.py
-└── web_events.py
+├── authentication.py
+├── README.md
+├── sigma/
+│   ├── ssh_auth_failures.yml
+│   ├── ssh_repeated_auth_failures.yml
+│   └── ssh_password_spray_correlation.yml
+└── queries/
+    ├── microsoft-sentinel/
+    │   └── ssh-password-spray.kql
+    └── splunk/
+        └── ssh-password-spray.spl
 
 cases/
 ├── CASE-MULTI-001/
@@ -138,7 +168,8 @@ cases/
 tests/
 └── unit and integration coverage for parsing, evidence, hypotheses,
     assessment, risk, escalation, response, case management, context,
-    scenarios, reporting, quality, validation, and the end-to-end pipeline
+    scenarios, reporting, quality, validation, detection engineering,
+    and the end-to-end pipeline
 ```
 
 ## Quality and security
