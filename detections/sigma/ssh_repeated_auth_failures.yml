@@ -1,0 +1,27 @@
+title: SSH Repeated Authentication Failures
+description: Detect repeated SSH authentication failures against a single account. Treat as a triage lead and preserve evidence gaps.
+status: test
+logsource:
+  product: linux
+  service: sshd
+detection:
+  selection:
+    event_type: authentication_failure
+    destination_port: 22
+  timeframe: 5m
+  condition: selection | count() by source_ip, account > 4
+falsepositives:
+  - Authorised vulnerability scanners
+  - Misconfigured automation
+  - Password-manager or credential rotation issues
+  - Approved penetration testing
+level: medium
+tags:
+  - attack.credential_access
+  - attack.t1110
+  - attack.t1110.001
+custom:
+  rule_id: AUTH-REPEAT-001
+  analytic_type: brute_force
+  confidence: medium
+  analyst_note: Confirm timestamps are trustworthy and investigate successful authentication and endpoint context.
