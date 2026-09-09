@@ -1,0 +1,27 @@
+{
+  "case_id": "CASE-NET-001",
+  "title": "Periodic Outbound Traffic and Potential Data Transfer",
+  "scenario": "c2_exfiltration",
+  "assessment": "Requires Investigation",
+  "confidence": "Medium",
+  "risk": "High",
+  "escalation": "Tier 2",
+  "response": "Investigate",
+  "closure": "Not ready: destination ownership, process attribution, transfer purpose, volume baseline, and data classification require validation.",
+  "evidence": [
+    {"id":"E-101","source":"firewall telemetry","observation":"Synthetic host generated repeated outbound connections to a rare external destination at regular intervals.","type":"observed","confidence":"High","relationship":"neutral"},
+    {"id":"E-102","source":"DNS telemetry","observation":"The destination resolved successfully but is not in the synthetic organisation allow-list.","type":"correlated","confidence":"Medium","relationship":"supports"},
+    {"id":"E-103","source":"flow summary","observation":"An outbound transfer followed the connection pattern; transferred volume is available but the data type is unknown.","type":"observed","confidence":"Medium","relationship":"supports"}
+  ],
+  "hypotheses": [
+    "Approved application health-check or telemetry traffic",
+    "Compromised endpoint communicating with external infrastructure",
+    "Potential command-and-control beaconing",
+    "Potential unauthorised data transfer",
+    "Unknown application behaviour"
+  ],
+  "lessons_learned": [
+    "Periodic outbound traffic is an investigation signal, not proof of C2.",
+    "Data volume alone cannot establish exfiltration without data-type and authorisation context."
+  ]
+}

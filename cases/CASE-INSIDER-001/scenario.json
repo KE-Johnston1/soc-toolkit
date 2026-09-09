@@ -1,0 +1,27 @@
+{
+  "case_id": "CASE-INSIDER-001",
+  "title": "Privileged Account Activity Requiring Context",
+  "scenario": "insider_credential_activity",
+  "assessment": "Insufficient Evidence",
+  "confidence": "Low",
+  "risk": "High",
+  "escalation": "Monitor",
+  "response": "Investigate",
+  "closure": "Not ready: ownership, authorisation, change-ticket context, endpoint activity, and account compromise indicators are unresolved.",
+  "evidence": [
+    {"id":"E-201","source":"identity provider","observation":"A privileged account authenticated from a source not previously associated with the account in the synthetic baseline.","type":"observed","confidence":"High","relationship":"neutral"},
+    {"id":"E-202","source":"change management","observation":"A maintenance window overlaps the authentication timestamp, but the responsible engineer and source device are not yet verified.","type":"correlated","confidence":"Medium","relationship":"challenges"},
+    {"id":"E-203","source":"endpoint telemetry","observation":"No post-authentication process evidence is included in the case pack.","type":"unknown","confidence":"Low","relationship":"neutral"}
+  ],
+  "hypotheses": [
+    "Authorised maintenance by a privileged administrator",
+    "Compromised privileged account",
+    "Shared or proxy source obscuring the true endpoint",
+    "Misconfigured automation",
+    "Potential insider activity requiring verification"
+  ],
+  "lessons_learned": [
+    "Unusual privileged authentication should trigger context collection, not automatic insider attribution.",
+    "Change-ticket and endpoint evidence should be correlated before closure."
+  ]
+}
