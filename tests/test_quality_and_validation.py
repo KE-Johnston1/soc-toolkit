@@ -35,8 +35,8 @@ class Phase4QualityTests(unittest.TestCase):
     def test_scenario_validation_accepts_required_shape(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "scenario.json"
-            data = {key: [] for key in ("hypotheses", "evidence")}
-            data.update({key: "value" for key in ("case_id", "scenario", "assessment", "confidence", "risk", "escalation", "response")})
+            data = {key: [] for key in ("hypotheses", "evidence", "lessons_learned")}
+            data.update({key: "value" for key in ("case_id", "title", "scenario", "assessment", "confidence", "risk", "escalation", "response", "closure")})
             path.write_text(json.dumps(data), encoding="utf-8")
             self.assertEqual(validate_scenario(path), [])
 
