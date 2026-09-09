@@ -1,0 +1,26 @@
+title: Periodic Outbound Connections to Rare Destination - Entry Level Example
+id: SOC-NET-001
+status: experimental
+description: >-
+  Correlation-oriented example for repeated outbound connections from one host
+  to a destination that is uncommon in the local baseline. Periodicity is an
+  investigation signal and does not by itself establish command and control.
+logsource:
+  category: firewall
+detection:
+  selection:
+    action: allowed
+  condition: selection
+falsepositives:
+  - Software update services
+  - Monitoring and telemetry agents
+  - Approved APIs
+  - Scheduled application traffic
+level: low
+tags:
+  - attack.command_and_control
+  - attack.t1071
+x-soc-toolkit:
+  assessment: Requires Investigation
+  analyst_note: Correlate destination rarity, timing regularity, process ownership, DNS, and approved application behaviour.
+  implementation_note: Use a SIEM correlation or baseline layer to calculate rarity and periodicity; this file documents the analytic intent.

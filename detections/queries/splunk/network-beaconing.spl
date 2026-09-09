@@ -1,0 +1,8 @@
+`SOC-NET-001 — Periodic outbound traffic / rare destination`
+`ATT&CK: T1071`
+index=network sourcetype=firewall action=allowed
+| bin _time span=5m
+| stats count as connection_count earliest(_time) as first_seen latest(_time) as last_seen by host dest_ip
+| where connection_count >= 5
+| eval RuleId="SOC-NET-001", ATTACK="T1071", Assessment="Requires Investigation", Confidence="Low"
+| eval AnalystNote="Correlate destination rarity, DNS, process ownership and approved application behaviour"

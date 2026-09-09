@@ -1,0 +1,8 @@
+// SOC-EXEC-001 — Suspicious PowerShell
+// ATT&CK: T1059.001
+// Reference implementation: adapt table/field names to the deployed connector.
+DeviceProcessEvents
+| where FileName =~ "powershell.exe"
+| where ProcessCommandLine has_any ("-enc", "encodedcommand", "downloadstring", "invoke-webrequest", "iwr ")
+| project Timestamp, DeviceName, AccountName, FileName, ProcessCommandLine, InitiatingProcessFileName
+| extend RuleId="SOC-EXEC-001", ATTACK="T1059.001", Assessment="Requires Investigation", Confidence="Medium"

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
+<title id="title">SOC Toolkit incident response workflow</title>
+<desc id="desc">Original diagram showing validate, scope, investigate, assess, respond and learn stages.</desc>
+<rect width="1200" height="420" rx="24" fill="#f8fafc"/>
+<text x="60" y="62" fill="#0f172a" font-family="Arial, sans-serif" font-size="30" font-weight="700">Entry-Level Incident Response Workflow</text>
+<text x="60" y="92" fill="#475569" font-family="Arial, sans-serif" font-size="16">A cautious, evidence-first workflow for the portfolio scenarios</text>
+<g font-family="Arial, sans-serif" font-size="16" text-anchor="middle">
+<g>
+<rect x="55" y="150" width="155" height="90" rx="14" fill="#dbeafe" stroke="#2563eb"/><text x="132" y="188" fill="#0f172a">1. Validate</text><text x="132" y="212" fill="#334155">Alert + telemetry</text>
+<rect x="245" y="150" width="155" height="90" rx="14" fill="#e0e7ff" stroke="#4f46e5"/><text x="322" y="188" fill="#0f172a">2. Scope</text><text x="322" y="212" fill="#334155">Who / what / when</text>
+<rect x="435" y="150" width="155" height="90" rx="14" fill="#dcfce7" stroke="#16a34a"/><text x="512" y="188" fill="#0f172a">3. Investigate</text><text x="512" y="212" fill="#334155">Evidence + hypotheses</text>
+<rect x="625" y="150" width="155" height="90" rx="14" fill="#fef3c7" stroke="#d97706"/><text x="702" y="188" fill="#0f172a">4. Assess</text><text x="702" y="212" fill="#334155">Confidence + risk</text>
+<rect x="815" y="150" width="155" height="90" rx="14" fill="#fee2e2" stroke="#dc2626"/><text x="892" y="188" fill="#0f172a">5. Respond</text><text x="892" y="212" fill="#334155">Authorised actions</text>
+<rect x="1005" y="150" width="140" height="90" rx="14" fill="#f1f5f9" stroke="#64748b"/><text x="1075" y="188" fill="#0f172a">6. Learn</text><text x="1075" y="212" fill="#334155">Tune + document</text>
+</g>
+<g stroke="#64748b" stroke-width="2" fill="none"><path d="M210 195h35"/><path d="M400 195h35"/><path d="M590 195h35"/><path d="M780 195h35"/><path d="M970 195h35"/></g>
+<g fill="#64748b"><path d="M238 189l9 6-9 6z"/><path d="M428 189l9 6-9 6z"/><path d="M618 189l9 6-9 6z"/><path d="M808 189l9 6-9 6z"/><path d="M998 189l9 6-9 6z"/></g>
+</g>
+<text x="60" y="315" fill="#334155" font-family="Arial, sans-serif" font-size="16">Portfolio boundary: synthetic evidence only; no live exploitation, credential attacks, automated containment, or production-SOC claims.</text>
+<text x="60" y="350" fill="#64748b" font-family="Arial, sans-serif" font-size="14">Original project artwork — no external image licence required.</text>
+</svg>

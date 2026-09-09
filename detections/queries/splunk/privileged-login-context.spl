@@ -1,0 +1,8 @@
+`SOC-ID-001 — Unusual Privileged Authentication Context`
+`ATT&CK: T1078`
+index=identity sourcetype=azure:aad:signin status=success
+| eval privileged=if(match(lower(user),"admin|priv"),1,0)
+| where privileged=1
+| table _time user src_ip app device risk
+| eval RuleId="SOC-ID-001", ATTACK="T1078", Assessment="Requires Investigation", Confidence="Low"
+| eval AnalystNote="Validate ownership, authorisation, maintenance context and subsequent activity"

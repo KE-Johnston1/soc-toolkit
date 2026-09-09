@@ -1,0 +1,7 @@
+`SOC-EXEC-001 — Suspicious PowerShell`
+`ATT&CK: T1059.001`
+index=windows sourcetype=WinEventLog:Microsoft-Windows-Sysmon/Operational EventCode=1
+| eval cmd=coalesce(CommandLine,process)
+| search Image="*\\powershell.exe" (cmd="*-enc*" OR cmd="*encodedcommand*" OR cmd="*downloadstring*" OR cmd="*invoke-webrequest*" OR cmd="*iwr *")
+| table _time host user Image cmd ParentImage
+| eval RuleId="SOC-EXEC-001", ATTACK="T1059.001", Assessment="Requires Investigation", Confidence="Medium"

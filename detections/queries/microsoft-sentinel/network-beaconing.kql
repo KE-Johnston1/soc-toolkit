@@ -1,0 +1,10 @@
+// SOC-NET-001 — Periodic outbound traffic / rare destination
+// ATT&CK: T1071
+// Reference implementation: adapt NetworkEvents schema to the deployed connector.
+NetworkEvents
+| where ActionType == "ConnectionSuccess"
+| summarize connection_count=count(), first_seen=min(Timestamp), last_seen=max(Timestamp) by DeviceName, RemoteIP
+| where connection_count >= 5
+| project DeviceName, RemoteIP, connection_count, first_seen, last_seen
+| extend RuleId="SOC-NET-001", ATTACK="T1071", Assessment="Requires Investigation", Confidence="Low"
+// Add local rarity/baseline logic and endpoint process ownership before treating this as suspicious.
