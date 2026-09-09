@@ -1,6 +1,6 @@
 # SOC Toolkit
 
-A defensive Python toolkit for turning synthetic security logs into structured observations, detection signals, evidence correlation, analyst assessment, competing hypotheses, risk context, escalation recommendations, controlled response decisions, and auditable case handling.
+A defensive Python toolkit for turning synthetic security logs into structured observations, detection signals, evidence correlation, analyst assessment, competing hypotheses, risk context, escalation recommendations, controlled response decisions, auditable case handling, scenario reporting, and operational-quality checks.
 
 ## Analyst workflow
 
@@ -9,7 +9,7 @@ Log input → Normalisation → Detection signal → Evidence provenance
 → Cross-source correlation → Competing hypotheses → Analyst assessment
 → Vulnerability / impact / attribution context → Scenario evidence requirements
 → Risk → Escalation → Response → Case lifecycle / decision trail
-→ Closure / lessons learned
+→ Closure / lessons learned → Quality validation
 ```
 
 The project deliberately separates detection from judgement. A rule firing is an investigation lead, not proof of brute force, compromise, malicious intent, attribution, legal breach, or an incident.
@@ -19,6 +19,7 @@ The project deliberately separates detection from judgement. A rule firing is an
 - **Phase 1 — Complete:** reproducible multi-source case, structured normalisation, detection, correlation, hypotheses, assessment, risk, escalation, response, case lifecycle.
 - **Phase 2 — Complete:** typed evidence provenance, vulnerability/CVE/CVSS context, business/financial impact, legal/privacy referral context, attribution uncertainty, and advanced scenario evidence requirements.
 - **Phase 3 — Complete:** reproducible scenario case packs and analyst reports covering phishing/impersonation, network/C2/exfiltration investigation, and privileged-account/insider-context investigation.
+- **Phase 4 — Complete:** detection-quality checks, scenario validation, descriptive case metrics, regression coverage, documentation/audit refresh, and explicit limits on synthetic quality metrics.
 
 ## Phase 3 scenario cases
 
@@ -35,6 +36,19 @@ A synthetic network investigation involving periodic outbound connections and a 
 A synthetic identity investigation where unusual privileged authentication overlaps a maintenance window. The case remains **Insufficient Evidence** because ownership, authorisation, source-device identity, and endpoint evidence are unresolved. The scenario does not automatically attribute activity to an insider.
 
 Each case contains a machine-readable `scenario.json` and an analyst-facing `analyst-report.md` with timeline, evidence matrix, hypotheses, assessment, risk, escalation, response, closure and lessons learned.
+
+## Phase 4 operational-quality controls
+
+The toolkit now includes controls for the quality of the synthetic investigation corpus:
+
+- labelled true-positive, false-positive, true-negative and false-negative detection checks
+- precision and recall when their denominators exist
+- tuning notes that encourage context/telemetry review before changing thresholds
+- structural validation of scenario packs
+- descriptive case-collection metrics for assessment, escalation, response, closure readiness and unresolved cases
+- regression tests for quality and data validation
+
+These are **training-data quality controls**, not production SOC performance claims.
 
 ## Evidence-first principles
 
@@ -58,10 +72,16 @@ Run the flagship synthetic pipeline:
 python main.py --module pipeline
 ```
 
-Run the legacy case-pack demonstration:
+Validate and summarise the Phase 3 scenario cases:
 
 ```bash
-python main.py --module case-pack
+python main.py --module scenarios
+```
+
+Run Phase 4 quality controls:
+
+```bash
+python main.py --module quality
 ```
 
 Run the full test suite:
@@ -77,6 +97,7 @@ soc_toolkit/
 ├── assessment.py
 ├── case_loader.py
 ├── case_management.py
+├── case_metrics.py
 ├── correlation.py
 ├── escalation.py
 ├── evidence.py
@@ -85,10 +106,12 @@ soc_toolkit/
 ├── investigation_context.py
 ├── models.py
 ├── pipeline.py
+├── quality.py
 ├── reporting.py
 ├── response.py
 ├── risk.py
-└── scenario_cases.py
+├── scenario_cases.py
+└── scenario_validation.py
 
 detections/
 └── authentication.py
@@ -109,12 +132,12 @@ cases/
 tests/
 └── unit and integration coverage for parsing, evidence, hypotheses,
     assessment, risk, escalation, response, case management, context,
-    scenarios, reporting, and the end-to-end pipeline
+    scenarios, reporting, quality, validation, and the end-to-end pipeline
 ```
 
 ## Quality and security
 
-The repository includes Python 3.11/3.12/3.13 CI and CodeQL analysis. Synthetic case data is designed to be reproducible and auditable. Generated report output is not committed as source data.
+The repository includes Python 3.11/3.12/3.13 CI and CodeQL analysis. Synthetic case data is designed to be reproducible and auditable. Generated report output is not committed as source data. Phase 4 quality metrics describe only the supplied synthetic checks.
 
 ## Safety and scope
 
@@ -122,7 +145,7 @@ This is an educational defensive security project. It does not perform live scan
 
 ## Audit
 
-See [`AUDIT.md`](AUDIT.md) for the repository audit history and Phase 3 baseline disposition.
+See [`AUDIT.md`](AUDIT.md) for the repository audit history and Phase 4 baseline disposition. See [`docs/phase4-operational-maturity.md`](docs/phase4-operational-maturity.md) for the Phase 4 controls and limitations.
 
 ## Author
 

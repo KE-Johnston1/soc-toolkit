@@ -1,46 +1,53 @@
 # SOC Toolkit Repository Audit
 
-**Audit status:** Phase 3 pre-implementation audit completed  
+**Audit status:** Phase 4 baseline audit completed  
 **Repository:** `KE-Johnston1/soc-toolkit`  
-**Baseline:** `main` at `09e35a1e87fa31094d370e9d16f41ea5f384ba5e`  
+**Baseline:** `main` at `e99ab20f8af6b9b2f427062021a5a580c823652d`  
 **Audit date:** 2026-09-09
 
 ## Scope
-Reviewed repository structure, README claims, Python package layout, tests/CI/CodeQL configuration, synthetic case data, evidence/risk/scenario integration, generated artefacts, and defensive safety boundaries before Phase 3 work.
+
+Reviewed repository structure, README claims, package layout, CLI entry points, tests/CI/CodeQL configuration, synthetic case packs and reports, evidence/hypothesis/risk/escalation/response integration, generated artefacts, legacy compatibility modules, and defensive safety boundaries before Phase 4 implementation.
 
 ## Findings and disposition
 
 | Finding | Severity | Disposition |
 |---|---|---|
-| Phase 1 and Phase 2 functionality are integrated into the pipeline | Informational | Verified; retain |
-| README contains a few inconsistent package-name spellings (`Soc_toolkit`) | Low | Corrected in Phase 3 documentation update |
-| Legacy modules remain alongside the refactored package | Medium | Retained temporarily for compatibility; documented as legacy |
-| `output/log_report.txt` is a committed generated artefact | Low | Removed; `output/.gitkeep` retained |
-| Synthetic/sample logs are present | Informational | Retain as reproducible training evidence; no real credentials/customer data |
-| Tests cover core decision layers but lack dedicated scenario-report coverage | Medium | Resolved by Phase 3 scenario/report tests |
-| CodeQL workflow exists | Informational | Retain and validate on final Phase 3 PR |
-| Repository uses defensive synthetic data and no live response | Informational | Verified; preserve boundary |
+| Phase 1–3 functionality is represented in the repository workflow | Informational | Verified; retain |
+| `AUDIT.md` described an older Phase 3 baseline rather than the current main revision | Low | Resolved by this Phase 4 audit refresh |
+| README documented Phase 3 as the latest completed phase | Low | Resolved in Phase 4 documentation update |
+| Legacy parser modules remain alongside the refactored package | Medium | Retained intentionally because legacy CLI entry points still expose them; documented |
+| Generated report output is not committed | Informational | Verified; retain `output/.gitkeep` only |
+| Scenario packs are reproducible synthetic training evidence | Informational | Verified; retain |
+| Detection quality was not explicitly measurable in the toolkit | Medium | Resolved by Phase 4 quality checks with synthetic labelled outcomes |
+| Scenario structure could fail silently until a scenario was loaded | Medium | Resolved by Phase 4 structural validation |
+| Case collections lacked descriptive summary metrics | Low | Resolved by Phase 4 case metrics |
+| Quality metrics could be mistaken for production SOC KPIs | Medium | Resolved by explicit documentation limiting metrics to supplied synthetic checks |
+| CodeQL and Python 3.11/3.12/3.13 CI exist | Informational | Retain and require final validation before merge |
+| Defensive synthetic safety boundary remains explicit | Informational | Verified; preserve |
 
-## Phase 3 controls
+## Phase 4 controls
 
-Phase 3 adds three reproducible scenario case packs:
+Phase 4 adds operational-quality controls without introducing offensive functionality:
 
-- `CASE-PHISH-001`: phishing / executive impersonation
-- `CASE-NET-001`: periodic outbound traffic / potential C2 and data transfer
-- `CASE-INSIDER-001`: privileged account activity requiring context
+- detection quality evaluation with true/false positive and negative outcomes
+- precision and recall where mathematically defined
+- tuning notes that direct analysts to investigate context and telemetry before threshold changes
+- structural scenario-pack validation
+- descriptive case-collection metrics
+- regression tests for these controls
+- updated Phase 4 documentation and completion checklist
 
-Each case explicitly separates observations, evidence relationships, competing hypotheses, assessment, risk, escalation, response, closure readiness, and lessons learned.
+The metrics are intentionally bounded to synthetic labelled checks and case data. They are not claims about production SOC precision, recall, alert volume, analyst performance or organisational risk.
 
-The new reporting model requires provenance for each evidence item and renders an evidence matrix. Reports state uncertainty explicitly and do not present indicators as proof of compromise, attribution, legal breach, or financial loss.
+## Compatibility disposition
 
-## Remaining compatibility note
-
-Legacy parser modules and sample logs remain in the repository because existing CLI entry points still reference them. They are not used to justify the Phase 3 scenario conclusions. A later cleanup can remove them once compatibility requirements are intentionally retired.
+Legacy parser modules remain because the CLI still provides their historical entry points. Removing them without an intentional compatibility decision would create unnecessary breakage. They are not treated as the authoritative implementation for the Phase 3 scenario reporting layer.
 
 ## Security boundary
 
-The project remains a defensive educational toolkit. Phase 3 does not add live scanning, credential attacks, exploitation, packet capture, persistence, command execution against targets, automated containment, or real-world phishing/impersonation operations. Scenario cases are synthetic analyst-training material.
+The project remains a defensive educational toolkit using synthetic data. Phase 4 adds no live scanning, credential attacks, exploitation, packet capture, persistence, target command execution, real-world phishing/impersonation operations or automated containment.
 
 ## Audit conclusion
 
-**Phase 3 baseline accepted.** Confirmed issues identified before implementation were either resolved in the Phase 3 branch or explicitly retained as compatibility items with documented scope. Final CI and CodeQL remain release gates before merge.
+**Phase 4 baseline accepted.** Confirmed documentation and operational-quality gaps were addressed. Remaining compatibility items are intentional and documented. Final CI and CodeQL are release gates before merge, followed by a post-merge audit.
