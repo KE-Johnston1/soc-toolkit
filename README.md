@@ -46,6 +46,8 @@ Phase 2 makes evidence provenance explicit and adds structured context around vu
 
 The pipeline exposes vulnerability relevance and evidence gaps without declaring exploitation, actor identity, financial loss, or a legal breach where those facts are not established.
 
+**Phase 2 is complete.** See [`docs/phase2-completion-checklist.md`](docs/phase2-completion-checklist.md) for the validated scope and controls.
+
 See [`docs/phase2-evidence-context.md`](docs/phase2-evidence-context.md), [`docs/phase2-risk-context.md`](docs/phase2-risk-context.md), and [`docs/phase2-scenario-context.md`](docs/phase2-scenario-context.md).
 
 ## End-to-end case demonstration
@@ -122,7 +124,7 @@ Run the test suite:
 python -m unittest discover -s tests -v
 ```
 
-See [`docs/risk-and-escalation.md`](docs/risk-and-escalation.md), [`docs/response-and-case-management.md`](docs/response-and-case-management.md), [`docs/phase1-multisource-case.md`](docs/phase1-multisource-case.md), [`docs/phase1-completion-checklist.md`](docs/phase1-completion-checklist.md), [`docs/phase2-evidence-context.md`](docs/phase2-evidence-context.md), [`docs/phase2-risk-context.md`](docs/phase2-risk-context.md), and [`docs/phase2-scenario-context.md`](docs/phase2-scenario-context.md) for the decision and evidence models.
+See [`docs/risk-and-escalation.md`](docs/risk-and-escalation.md), [`docs/response-and-case-management.md`](docs/response-and-case-management.md), [`docs/phase1-multisource-case.md`](docs/phase1-multisource-case.md), [`docs/phase1-completion-checklist.md`](docs/phase1-completion-checklist.md), [`docs/phase2-evidence-context.md`](docs/phase2-evidence-context.md), [`docs/phase2-risk-context.md`](docs/phase2-risk-context.md), [`docs/phase2-scenario-context.md`](docs/phase2-scenario-context.md), and [`docs/phase2-completion-checklist.md`](docs/phase2-completion-checklist.md) for the decision and evidence models.
 
 ## Project structure
 
