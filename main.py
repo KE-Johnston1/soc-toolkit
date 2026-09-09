@@ -86,12 +86,35 @@ def run_pipeline() -> None:
 def run_scenarios() -> None:
     """Validate and summarise all Phase 3 synthetic scenario packs."""
     from soc_toolkit.scenario_cases import load_scenario_case
+    from soc_toolkit.scenario_validation import validate_scenario
     root = Path("cases")
     scenario_ids = ("CASE-PHISH-001", "CASE-NET-001", "CASE-INSIDER-001")
     for case_id in scenario_ids:
-        case = load_scenario_case(root / case_id / "scenario.json")
+        path = root / case_id / "scenario.json"
+        errors = validate_scenario(path)
+        if errors:
+            print(f"{case_id}: INVALID")
+            for error in errors: print(f"  - {error}")
+            continue
+        case = load_scenario_case(path)
         print(f"{case.case_id}: {case.data['scenario']} | {case.data['assessment']} ({case.data['confidence']}) | risk={case.data['risk']} | escalation={case.data['escalation']} | response={case.data['response']}")
-        print(f"  Evidence records: {len(case.evidence)} | Hypotheses: {len(case.data['hypotheses'])} | Gaps: closure remains case-specific")
+        print(f"  Evidence records: {len(case.evidence)} | Hypotheses: {len(case.data['hypotheses'])} | Validated: yes")
+
+
+def run_quality() -> None:
+    """Evaluate a small labelled synthetic detection-quality corpus."""
+    from soc_toolkit.quality import DetectionCheck, evaluate_detection_quality
+    checks = [
+        DetectionCheck("CASE-MULTI-001", "AUTH-REPEATED-FAILURES", True, True, "five failures occur inside the configured window"),
+        DetectionCheck("CASE-INSIDER-001", "AUTH-REPEATED-FAILURES", False, False, "privileged maintenance activity does not meet the repeated-failure rule"),
+        DetectionCheck("CASE-PHISH-001", "AUTH-REPEATED-FAILURES", False, False, "mail investigation is outside authentication rule scope"),
+    ]
+    result = evaluate_detection_quality(checks)
+    print(f"Checks: {result.total}")
+    print(f"TP={result.true_positive} FP={result.false_positive} TN={result.true_negative} FN={result.false_negative}")
+    print(f"Precision: {result.precision if result.precision is not None else 'Unknown'}")
+    print(f"Recall: {result.recall if result.recall is not None else 'Unknown'}")
+    for note in result.tuning_notes: print(f"Tuning note: {note}")
 
 
 def run_module(module: str) -> None:
@@ -117,12 +140,13 @@ def run_module(module: str) -> None:
     elif module == "case-pack": run_case_pack()
     elif module == "pipeline": run_pipeline()
     elif module == "scenarios": run_scenarios()
+    elif module == "quality": run_quality()
     else: raise ValueError("unknown module")
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="SOC Toolkit CLI")
-    modules = ("log", "firewall", "web", "correlate", "reputation", "assessment", "response", "case", "case-pack", "pipeline", "scenarios")
+    modules = ("log", "firewall", "web", "correlate", "reputation", "assessment", "response", "case", "case-pack", "pipeline", "scenarios", "quality")
     parser.add_argument("--module", choices=modules, help="Module to run")
     args = parser.parse_args()
     if args.module:
