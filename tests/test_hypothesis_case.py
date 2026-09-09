@@ -15,11 +15,13 @@ class CaseHypothesisTests(unittest.TestCase):
         hypotheses = build_case_hypotheses(pack.events, correlations)
 
         self.assertEqual(len(hypotheses), 5)
-        self.assertEqual(hypotheses[0].status, "Supported")
+        self.assertEqual(hypotheses[0].status, "Challenged")
         self.assertEqual(hypotheses[1].status, "Supported")
         self.assertEqual(hypotheses[2].status, "Supported")
+        self.assertEqual(hypotheses[3].status, "Supported")
         self.assertEqual(hypotheses[4].status, "Open")
         self.assertIn("not proof", hypotheses[1].rationale)
+        self.assertIn("authorization", hypotheses[0].evidence[0].observation)
 
 
 if __name__ == "__main__":

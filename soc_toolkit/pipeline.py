@@ -11,6 +11,7 @@ from soc_toolkit.case_loader import CasePack, load_case_pack
 from soc_toolkit.case_management import CaseRecord, transition_case
 from soc_toolkit.correlation import CorrelationResult, correlate_events
 from soc_toolkit.escalation import EscalationDecision, EscalationInput, recommend_escalation
+from soc_toolkit.evidence import EvidenceRecord, EvidenceSummary, summarise_evidence
 from soc_toolkit.hypotheses import Hypothesis
 from soc_toolkit.hypothesis_case import build_case_hypotheses
 from soc_toolkit.response import ResponseDecision, ResponseInput, recommend_response
@@ -66,6 +67,8 @@ class CaseSummary:
     correlated_sources: tuple[str, ...]
     correlations: tuple[CorrelationResult, ...]
     events: tuple[LogEvent, ...]
+    evidence_records: tuple[EvidenceRecord, ...]
+    evidence_summary: EvidenceSummary
     hypotheses: tuple[Hypothesis, ...]
     assessment: AnalystAssessment
     risk: RiskAssessment
@@ -87,6 +90,43 @@ def _load_events(case: PipelineInput) -> tuple[LogEvent, ...]:
     return tuple(parse_auth_log(path, year=case.created_at.year, tz=case.created_at.tzinfo))
 
 
+def _build_evidence_records(
+    events: tuple[LogEvent, ...],
+    correlations: tuple[CorrelationResult, ...],
+) -> tuple[EvidenceRecord, ...]:
+    """Represent observations and correlations with explicit provenance."""
+    records: list[EvidenceRecord] = []
+    for index, event in enumerate(events, start=1):
+        records.append(
+            EvidenceRecord(
+                evidence_id=f"OBS-{index:03d}",
+                source=event.evidence_source,
+                observation=event.message,
+                evidence_type="observed",
+                confidence="High",
+                relationship="neutral",
+                observed_at=event.timestamp,
+                asset=event.destination_ip,
+                account=event.account,
+            )
+        )
+    for correlation in correlations:
+        if len(correlation.evidence_sources) >= 2:
+            records.append(
+                EvidenceRecord(
+                    evidence_id=f"CORR-{correlation.source_ip}",
+                    source=", ".join(correlation.evidence_sources),
+                    observation=correlation.rationale,
+                    evidence_type="correlated",
+                    confidence=correlation.confidence,
+                    relationship="neutral",
+                    observed_at=None,
+                    notes="Correlation describes a relationship between observations; it does not establish attribution or intent.",
+                )
+            )
+    return tuple(records)
+
+
 def run_pipeline(case: PipelineInput) -> CaseSummary:
     """Run one synthetic case through detection, correlation and decision layers."""
     if case.created_at.tzinfo is None:
@@ -98,6 +138,8 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
     auth_events = tuple(event for event in events if event.event_type.startswith("authentication_"))
     detections = tuple(detect_repeated_auth_failures(list(auth_events)))
     correlations = tuple(correlate_events(events, window=timedelta(minutes=5)))
+    evidence_records = _build_evidence_records(events, correlations)
+    evidence_summary = summarise_evidence(evidence_records)
     hypotheses = build_case_hypotheses(events, correlations)
 
     evidence: list[EvidenceItem] = []
@@ -235,6 +277,8 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
         correlated_sources=tuple(correlated_sources),
         correlations=correlations,
         events=events,
+        evidence_records=evidence_records,
+        evidence_summary=evidence_summary,
         hypotheses=hypotheses,
         assessment=assessment,
         risk=risk,
