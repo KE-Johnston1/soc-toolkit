@@ -4,14 +4,14 @@ import json
 from pathlib import Path
 
 REQUIRED_SCENARIO_KEYS = {
-    "case_id", "scenario", "assessment", "confidence", "risk", "escalation", "response", "hypotheses", "evidence"
+    "case_id", "title", "scenario", "assessment", "confidence", "risk", "escalation",
+    "response", "closure", "hypotheses", "evidence", "lessons_learned",
 }
 
 
 def validate_scenario(path: str | Path) -> list[str]:
     """Return validation errors; an empty list means the pack is structurally valid."""
     file_path = Path(path)
-    errors: list[str] = []
     if not file_path.is_file():
         return [f"scenario file does not exist: {file_path}"]
     try:
@@ -20,10 +20,11 @@ def validate_scenario(path: str | Path) -> list[str]:
         return [f"scenario JSON could not be loaded: {exc}"]
     if not isinstance(data, dict):
         return ["scenario root must be an object"]
-    missing = sorted(REQUIRED_SCENARIO_KEYS - data.keys())
-    errors.extend(f"missing required field: {key}" for key in missing)
-    if not isinstance(data.get("hypotheses", []), list):
-        errors.append("hypotheses must be a list")
-    if not isinstance(data.get("evidence", []), list):
-        errors.append("evidence must be a list")
+    errors = [f"missing required field: {key}" for key in sorted(REQUIRED_SCENARIO_KEYS - data.keys())]
+    for key in ("case_id", "title", "scenario", "assessment", "confidence", "risk", "escalation", "response", "closure"):
+        if key in data and (not isinstance(data[key], str) or not data[key].strip()):
+            errors.append(f"scenario field {key} must be a non-empty string")
+    for key in ("hypotheses", "evidence", "lessons_learned"):
+        if key in data and (not isinstance(data[key], list) or not data[key]):
+            errors.append(f"{key} must be a non-empty list")
     return errors
