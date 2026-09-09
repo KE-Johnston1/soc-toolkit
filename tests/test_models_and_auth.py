@@ -73,6 +73,26 @@ class TestAuthenticationDetection(unittest.TestCase):
             path.write_text("".join(lines), encoding="utf-8")
             return parse_auth_log(path, year=2026, tz=timezone.utc) if timestamped else parse_auth_log(path)
 
+    def _password_spray_events(self):
+        accounts = ("alice", "bob", "carol", "dave", "erin")
+        return [
+            LogEvent(
+                timestamp=datetime(2026, 9, 28, 14, 2, index, tzinfo=timezone.utc),
+                source_ip="192.0.2.55",
+                destination_ip=None,
+                source_port=40000 + index,
+                destination_port=22,
+                protocol="tcp",
+                event_type="authentication_failure",
+                account=account,
+                action="failure",
+                message=f"Failed password for {account}",
+                evidence_source="synthetic-password-spray.log",
+                raw_line=f"Failed password for {account}",
+            )
+            for index, account in enumerate(accounts, start=1)
+        ]
+
     def test_threshold_and_window(self):
         results = detect_repeated_auth_failures(self._events(), threshold=5, window=timedelta(minutes=5))
         self.assertEqual(len(results), 1)
@@ -84,6 +104,13 @@ class TestAuthenticationDetection(unittest.TestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].confidence, "Low")
         self.assertIn("trustworthy timestamps", results[0].evidence_gaps[0])
+
+    def test_detects_password_spraying_across_multiple_accounts(self):
+        results = detect_repeated_auth_failures(self._password_spray_events(), threshold=5, window=timedelta(minutes=5))
+        spray_results = [result for result in results if result.account is None]
+        self.assertEqual(len(spray_results), 1)
+        self.assertEqual(spray_results[0].source_ip, "192.0.2.55")
+        self.assertIn("multiple accounts", spray_results[0].evidence[0])
 
     def test_threshold_validation(self):
         with self.assertRaises(ValueError):

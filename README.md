@@ -21,6 +21,7 @@ The project deliberately separates detection from judgement. A rule firing is an
 - **Phase 3 — Complete:** reproducible scenario case packs and analyst reports covering phishing/impersonation, network/C2/exfiltration investigation, and privileged-account/insider-context investigation.
 - **Phase 4 — Complete:** detection-quality checks, scenario validation, descriptive case metrics, regression coverage, documentation/audit refresh, and explicit limits on synthetic quality metrics.
 - **Phase 5 — Complete:** employment-readiness hardening, security/contributor guidance, dependency-update automation, current GitHub Actions runtimes, and final repository audit controls.
+- **Security audit hardening — In review:** password-spraying detection coverage, immutable GitHub Actions references, and an explicit security-audit record.
 
 ## Phase 3 scenario cases
 
@@ -50,6 +51,10 @@ The toolkit now includes controls for the quality of the synthetic investigation
 - regression tests for quality and data validation
 
 These are **training-data quality controls**, not production SOC performance claims.
+
+## Detection engineering highlight
+
+The authentication detector evaluates both repeated failures against one account and source-wide failures across multiple accounts. The second view is designed to surface password-spraying investigation leads that a per-account threshold can miss. Both paths retain explicit confidence and evidence-gap handling.
 
 ## Evidence-first principles
 
@@ -138,7 +143,9 @@ tests/
 
 ## Quality and security
 
-The repository includes Python 3.11/3.12/3.13 CI and CodeQL analysis. GitHub Actions uses current Node 24-compatible action versions. Dependabot checks GitHub Actions and Python dependencies monthly. Synthetic case data is designed to be reproducible and auditable. Generated report output is not committed as source data. Phase 4 quality metrics describe only the supplied synthetic checks.
+The repository includes Python 3.11/3.12/3.13 CI and CodeQL analysis. GitHub Actions uses current Node 24-compatible action versions and the security-hardening branch pins those action references to immutable commit SHAs. Dependabot checks GitHub Actions and Python dependencies monthly. Synthetic case data is designed to be reproducible and auditable. Generated report output is not committed as source data.
+
+See [`SECURITY.md`](SECURITY.md) for the reporting policy and [`AUDIT.md`](AUDIT.md) for the repository audit history. The security-hardening review is documented in [`docs/security-audit.md`](docs/security-audit.md) once merged.
 
 ## Safety and scope
 
@@ -146,7 +153,7 @@ This is an educational defensive security project. It does not perform live scan
 
 ## Audit
 
-See [`AUDIT.md`](AUDIT.md) for the repository audit history and Phase 5 employment-readiness disposition. See [`docs/phase4-operational-maturity.md`](docs/phase4-operational-maturity.md) and [`docs/phase5-employment-readiness.md`](docs/phase5-employment-readiness.md) for the quality controls, limitations and final hardening work.
+See [`AUDIT.md`](AUDIT.md) for the repository audit history and Phase 5 employment-readiness disposition. See [`docs/phase4-operational-maturity.md`](docs/phase4-operational-maturity.md) and [`docs/phase5-employment-readiness.md`](docs/phase5-employment-readiness.md) for the quality controls, limitations and hardening work.
 
 ## Author
 
