@@ -1,7 +1,7 @@
 """Evidence-aware authentication detections."""
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from soc_toolkit.models import LogEvent
 
@@ -43,26 +43,6 @@ def _build_result(
         evidence_gaps=evidence_gaps,
         rationale=rationale,
     )
-
-
-def _within_window(group: list[LogEvent], window: timedelta) -> list[LogEvent] | None:
-    """Return the first threshold-sized window, or ``None`` when timestamps are incomplete."""
-    timestamps = [event.timestamp for event in group]
-    if not all(timestamp is not None for timestamp in timestamps):
-        return None
-
-    ordered = sorted(group, key=lambda event: event.timestamp)  # type: ignore[arg-type]
-    for start_index, start_event in enumerate(ordered):
-        start = start_event.timestamp
-        assert start is not None
-        window_events = [
-            event
-            for event in ordered[start_index:]
-            if event.timestamp is not None and event.timestamp - start <= window
-        ]
-        if window_events:
-            return window_events
-    return []
 
 
 def detect_repeated_auth_failures(
