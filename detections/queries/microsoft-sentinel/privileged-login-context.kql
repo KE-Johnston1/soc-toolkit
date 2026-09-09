@@ -1,0 +1,9 @@
+// SOC-ID-001 — Unusual Privileged Authentication Context
+// ATT&CK: T1078
+// Reference implementation: adapt identity table/field names to the deployed connector.
+SigninLogs
+| where ResultType == 0
+| where tostring(RiskDetail) has "admin" or tostring(UserPrincipalName) has "admin"
+| project TimeGenerated, UserPrincipalName, IPAddress, AppDisplayName, DeviceDetail, RiskDetail
+| extend RuleId="SOC-ID-001", ATTACK="T1078", Assessment="Requires Investigation", Confidence="Low"
+// Validate against approved administration windows and known privileged-account inventory before escalation.
