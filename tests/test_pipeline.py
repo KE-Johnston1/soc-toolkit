@@ -4,6 +4,7 @@ import unittest
 
 from detections.authentication import detect_repeated_auth_failures
 from parsers.auth_parser import parse_auth_log
+from soc_toolkit.investigation_context import InvestigationContext, VulnerabilityContext
 from soc_toolkit.pipeline import PipelineInput, run_pipeline
 
 
@@ -100,6 +101,31 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(result.escalation.level, "Incident Response")
         self.assertEqual(result.response.action, "Contain")
         self.assertFalse(result.closure_ready)
+
+    def test_pipeline_exposes_cve_relevance_without_claiming_exploitation(self):
+        context = InvestigationContext(
+            vulnerability=VulnerabilityContext(
+                product="Example Server",
+                version="1.2.3",
+                version_confirmed=True,
+                cve_id="CVE-2026-12345",
+                vulnerability_applicable=True,
+                exploitation_evidence=False,
+                cvss_severity="High",
+            )
+        )
+        result = run_pipeline(
+            PipelineInput(
+                case_id="CASE-PIPE-003",
+                alert_id="ALERT-SSH-003",
+                auth_log_path=self.log,
+                investigation_context=context,
+            )
+        )
+        self.assertEqual(result.vulnerability_relevance, "Potentially Relevant - Exploitation Not Established")
+        self.assertEqual(result.vulnerability_gaps, ())
+        self.assertEqual(result.risk.cve_relevance, "Potentially Relevant - Exploitation Not Established")
+        self.assertEqual(result.risk.cvss_severity, "High")
 
 
 if __name__ == "__main__":

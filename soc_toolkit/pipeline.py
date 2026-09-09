@@ -14,6 +14,7 @@ from soc_toolkit.escalation import EscalationDecision, EscalationInput, recommen
 from soc_toolkit.evidence import EvidenceRecord, EvidenceSummary, summarise_evidence
 from soc_toolkit.hypotheses import Hypothesis
 from soc_toolkit.hypothesis_case import build_case_hypotheses
+from soc_toolkit.investigation_context import InvestigationContext, assess_vulnerability
 from soc_toolkit.response import ResponseDecision, ResponseInput, recommend_response
 from soc_toolkit.risk import RiskAssessment, RiskInput, assess_risk
 from soc_toolkit.models import LogEvent
@@ -57,6 +58,7 @@ class PipelineInput:
     cve_relevance: str = "Unknown"
     cvss_severity: str = "Unknown"
     assessment_confidence: str = "Low"
+    investigation_context: InvestigationContext = InvestigationContext()
     created_at: datetime = datetime(2026, 9, 7, 12, 0, tzinfo=timezone.utc)
 
 
@@ -74,6 +76,9 @@ class CaseSummary:
     risk: RiskAssessment
     escalation: EscalationDecision
     response: ResponseDecision
+    vulnerability_relevance: str
+    vulnerability_gaps: tuple[str, ...]
+    investigation_context: InvestigationContext
     closure_ready: bool
 
 
@@ -141,6 +146,7 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
     evidence_records = _build_evidence_records(events, correlations)
     evidence_summary = summarise_evidence(evidence_records)
     hypotheses = build_case_hypotheses(events, correlations)
+    vulnerability_relevance, vulnerability_gaps = assess_vulnerability(case.investigation_context.vulnerability)
 
     evidence: list[EvidenceItem] = []
     for detection in detections:
@@ -185,9 +191,9 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
             business_impact=case.business_impact,
             financial_impact=case.financial_impact,
             financial_basis=case.financial_basis,
-            legal_regulatory_consideration=case.legal_privacy_consideration,
-            cve_relevance=case.cve_relevance,
-            cvss_severity=case.cvss_severity,
+            legal_regulatory_consideration=case.legal_privacy_consideration or case.investigation_context.legal_privacy.consideration_present,
+            cve_relevance=case.cve_relevance if case.cve_relevance != "Unknown" else vulnerability_relevance,
+            cvss_severity=case.cvss_severity if case.cvss_severity != "Unknown" else case.investigation_context.vulnerability.cvss_severity,
             confidence=case.assessment_confidence,
         )
     )
@@ -204,13 +210,13 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
             c2_evidence=case.c2_evidence,
             exfiltration_evidence=case.exfiltration_evidence,
             business_impact=case.business_impact,
-            sensitive_data_involved=case.sensitive_data_involved,
-            legal_privacy_consideration=case.legal_privacy_consideration,
+            sensitive_data_involved=case.sensitive_data_involved or case.investigation_context.impact.data_sensitivity == "High",
+            legal_privacy_consideration=case.legal_privacy_consideration or case.investigation_context.legal_privacy.consideration_present,
             repeated_related_alerts=case.multiple_accounts,
         )
     )
 
-    combined_gaps = tuple(dict.fromkeys(assessment.evidence_gaps + risk.evidence_gaps + escalation.evidence_gaps))
+    combined_gaps = tuple(dict.fromkeys(assessment.evidence_gaps + risk.evidence_gaps + escalation.evidence_gaps + vulnerability_gaps))
     closure_rationale = "Verified expected activity with no unresolved evidence gaps." if assessment.assessment == "Expected" and not combined_gaps else ""
     response = recommend_response(
         ResponseInput(
@@ -284,5 +290,8 @@ def run_pipeline(case: PipelineInput) -> CaseSummary:
         risk=risk,
         escalation=escalation,
         response=response,
+        vulnerability_relevance=vulnerability_relevance,
+        vulnerability_gaps=vulnerability_gaps,
+        investigation_context=case.investigation_context,
         closure_ready=response.action == "Close" and record.status == "Closed",
     )
