@@ -1,87 +1,119 @@
 # SOC Toolkit
 
-A defensive Python toolkit for turning synthetic security logs into structured observations, detection signals, evidence correlation, analyst assessment, competing hypotheses, risk context, escalation recommendations, controlled response decisions, auditable case handling, scenario reporting, and operational-quality checks.
+![SOC Toolkit overview](docs/assets/soc-toolkit-overview.svg)
+
+**Entry-level SOC investigation & detection-engineering portfolio lab**
+
+A defensive Python project created to put cybersecurity and CySA+ learning into practice. It turns synthetic security telemetry into structured observations, detection signals, evidence correlation, analyst assessment, competing hypotheses, risk context, escalation recommendations, controlled response decisions, auditable case handling, and quality checks.
+
+> **Project scope:** This is a personal learning and portfolio project. It has not been operated in a production SOC. Telemetry and scenarios are synthetic. The project deliberately demonstrates practical concepts without claiming production experience.
+
+## What this demonstrates
+
+- Security monitoring and log analysis
+- Python-based defensive tooling
+- Detection engineering
+- MITRE ATT&CK mapping
+- Sigma detection specifications
+- Microsoft Sentinel KQL examples
+- Splunk SPL examples
+- Evidence provenance and correlation
+- Competing hypotheses and confidence-aware assessment
+- Basic incident-response workflows
+- Threat-hunting exercises
+- Regression and quality testing
+- GitHub Actions and CodeQL security controls
+
+![Incident response workflow](docs/assets/incident-response-flow.svg)
 
 ## Analyst workflow
 
 ```text
-Log input → Normalisation → Detection signal → Evidence provenance
-→ Cross-source correlation → Competing hypotheses → Analyst assessment
-→ Vulnerability / impact / attribution context → Scenario evidence requirements
-→ Risk → Escalation → Response → Case lifecycle / decision trail
-→ Closure / lessons learned → Quality validation
+Synthetic telemetry
+       ↓
+Normalisation
+       ↓
+Detection signal
+       ↓
+Evidence provenance
+       ↓
+Correlation
+       ↓
+Competing hypotheses
+       ↓
+Analyst assessment
+       ↓
+Risk / escalation
+       ↓
+Controlled response
+       ↓
+Case closure / lessons learned
 ```
 
-The project deliberately separates detection from judgement. A rule firing is an investigation lead, not proof of brute force, compromise, malicious intent, legal breach, or attribution.
-
-## Phase status
-
-- **Phase 1 — Complete:** reproducible multi-source case, structured normalisation, detection, correlation, hypotheses, assessment, risk, escalation, response, case lifecycle.
-- **Phase 2 — Complete:** typed evidence provenance, vulnerability/CVE/CVSS context, business/financial impact, legal/privacy referral context, attribution uncertainty, and advanced scenario evidence requirements.
-- **Phase 3 — Complete:** reproducible scenario case packs and analyst reports covering phishing/impersonation, network/C2/exfiltration investigation, and privileged-account/insider-context investigation.
-- **Phase 4 — Complete:** detection-quality checks, scenario validation, descriptive case metrics, regression coverage, documentation/audit refresh, and explicit limits on synthetic quality metrics.
-- **Phase 5 — Complete:** employment-readiness hardening, security/contributor guidance, dependency-update automation, current GitHub Actions runtimes, and final repository audit controls.
-- **Security audit hardening — Complete:** password-spraying detection coverage, immutable GitHub Actions references, and an explicit security-audit record.
-- **Detection engineering layer — Complete:** MITRE ATT&CK mappings, portable Sigma rules, Microsoft Sentinel KQL, Splunk SPL, false-positive guidance, and regression checks for the detection catalogue.
+The project deliberately separates **detection from judgement**. A rule firing is an investigation lead, not proof of brute force, compromise, malicious intent, legal breach, or attribution.
 
 ## Detection engineering
 
-The authentication analytics are represented consistently across multiple detection-engineering formats:
+The flagship authentication analytic is represented across multiple formats:
 
 ```text
 Python analytic
      ↓
-Sigma specification
+Sigma
      ↓
 Microsoft Sentinel KQL / Splunk SPL
      ↓
-MITRE ATT&CK mapping
+MITRE ATT&CK
      ↓
 Positive + negative validation
      ↓
-Analyst triage and case handling
+Analyst triage
 ```
 
-The flagship `AUTH-REPEAT-001` analytic evaluates both repeated failures against one account and source-wide failures across multiple accounts. The second view is designed to surface password-spraying investigation leads that a per-account threshold can miss.
+### Current detection catalogue
 
-### ATT&CK coverage
+| Rule | Behaviour | ATT&CK | Formats |
+|---|---|---|---|
+| `AUTH-BASE-001` | Failed SSH authentication | T1110 | Python / Sigma |
+| `AUTH-REPEAT-001` | Repeated failures against one account | T1110.001 | Python / Sigma |
+| `AUTH-REPEAT-001` | Repeated failures across accounts | T1110.003 | Python / Sigma / KQL / SPL |
+| `SOC-EXEC-001` | Suspicious PowerShell indicators | T1059.001 | Sigma / KQL / SPL |
+| `SOC-ID-001` | Unusual privileged authentication context | T1078 | Sigma / KQL / SPL |
+| `SOC-NET-001` | Periodic outbound traffic investigation lead | T1071 | Sigma / KQL / SPL |
 
-| Rule | Behaviour | ATT&CK |
-|---|---|---|
-| `AUTH-BASE-001` | Failed SSH authentication | T1110 |
-| `AUTH-REPEAT-001` | Repeated failures against one account | T1110.001 Password Guessing |
-| `AUTH-REPEAT-001` | Repeated failures across multiple accounts | T1110.003 Password Spraying |
+These additional detections are intentionally **experimental/reference examples**. SIEM table names, fields, baselines and thresholds must be adapted and validated in a real environment.
 
-Portable rules and SIEM query examples live under [`detections/`](detections/) and are documented in [`docs/detection-engineering.md`](docs/detection-engineering.md).
+See [`detections/README.md`](detections/README.md) and [`docs/detection-engineering.md`](docs/detection-engineering.md).
 
-## Phase 3 scenario cases
+## Example investigation
 
-### CASE-PHISH-001 — Suspected Executive Impersonation / Phishing
+[`docs/portfolio-demo.md`](docs/portfolio-demo.md) walks through `CASE-NET-001` from detection lead → evidence → hypotheses → assessment → response recommendation.
 
-A synthetic mail investigation involving display-name impersonation, header evidence, and a user report. The case remains **Requires Investigation** because sender identity, account compromise, and user impact require verification.
+The existing scenario cases cover:
 
-### CASE-NET-001 — Periodic Outbound Traffic / Potential C2 and Data Transfer
+- **CASE-PHISH-001:** suspected executive impersonation / phishing
+- **CASE-NET-001:** periodic outbound traffic / potential C2 and data transfer
+- **CASE-INSIDER-001:** privileged-account activity requiring context
+- **CASE-MULTI-001:** multi-source investigation
 
-A synthetic network investigation involving periodic outbound connections and a subsequent transfer. The case is **Requires Investigation** with **High provisional risk** and **Tier 2** escalation; periodic traffic and transfer volume are not treated as proof of C2 or exfiltration.
+Each case contains machine-readable scenario data and an analyst-facing report with timeline, evidence matrix, hypotheses, assessment, risk, escalation, response, closure and lessons learned.
 
-### CASE-INSIDER-001 — Privileged Account Activity Requiring Context
+## Incident-response playbooks
 
-A synthetic identity investigation where unusual privileged authentication overlaps a maintenance window. The case remains **Insufficient Evidence** because ownership, authorisation, source-device identity, and endpoint evidence are unresolved. The scenario does not automatically attribute activity to an insider.
+Entry-level playbooks are provided for:
 
-Each case contains a machine-readable `scenario.json` and an analyst-facing `analyst-report.md` with timeline, evidence matrix, hypotheses, assessment, risk, escalation, response, closure and lessons learned.
+- [`Password spraying`](docs/playbooks/password-spraying.md)
+- [`Compromised account`](docs/playbooks/compromised-account.md)
+- [`Phishing`](docs/playbooks/phishing.md)
 
-## Phase 4 operational-quality controls
+They are deliberately guidance-oriented rather than automated containment workflows.
 
-The toolkit now includes controls for the quality of the synthetic investigation corpus:
+## Threat-hunting exercises
 
-- labelled true-positive, false-positive, true-negative and false-negative detection checks
-- precision and recall when their denominators exist
-- tuning notes that encourage context/telemetry review before changing thresholds
-- structural validation of scenario packs
-- descriptive case-collection metrics for assessment, escalation, response, closure readiness and unresolved cases
-- regression tests for quality and data validation
+- [`Password spraying hunt`](docs/threat-hunts/password-spray-hunt.md)
+- [`Suspicious authentication hunt`](docs/threat-hunts/suspicious-authentication-hunt.md)
 
-These are **training-data quality controls**, not production SOC performance claims.
+Each starts with a hypothesis and identifies the telemetry, questions and evidence needed to support or reject it.
 
 ## Evidence-first principles
 
@@ -91,35 +123,20 @@ These are **training-data quality controls**, not production SOC performance cla
 - **Hypothesis:** a possible explanation requiring validation.
 - **Unknown:** not established by available evidence.
 
-A source IP is not automatically an actor identity. A CVE reference is not proof of exploitation. CVSS severity is not the same as organisational risk. Potential impact is not observed impact. Estimated financial values must retain their basis. Legal/privacy fields indicate when specialist referral may be appropriate; they are not legal advice or breach determinations.
+A source IP is not automatically an actor identity. A CVE reference is not proof of exploitation. CVSS severity is not the same as organisational risk. Potential impact is not observed impact. Legal/privacy fields indicate when specialist referral may be appropriate; they are not legal advice or breach determinations.
 
-Scenario labels are investigation contexts rather than verdicts. Phishing, impersonation, insider threat, C2, exfiltration and AI-assisted attack indicators require appropriate corroboration.
+## Quality and security
 
-Containment is controlled: it requires explicit authorisation and a safe execution condition. Closure requires an `Expected` assessment, no unresolved evidence gaps, and a documented rationale.
+The repository includes Python 3.11/3.12/3.13 CI, regression tests and CodeQL analysis. GitHub Actions uses current Node 24-compatible action versions and the security-hardening branch pins action references to immutable commit SHAs. Dependabot checks GitHub Actions and Python dependencies monthly. Synthetic case data is reproducible and auditable.
+
+See [`SECURITY.md`](SECURITY.md), [`AUDIT.md`](AUDIT.md), [`docs/phase4-operational-maturity.md`](docs/phase4-operational-maturity.md), and [`docs/phase5-employment-readiness.md`](docs/phase5-employment-readiness.md).
 
 ## Running the toolkit
 
-Run the flagship synthetic pipeline:
-
 ```bash
 python main.py --module pipeline
-```
-
-Validate and summarise the Phase 3 scenario cases:
-
-```bash
 python main.py --module scenarios
-```
-
-Run Phase 4 quality controls:
-
-```bash
 python main.py --module quality
-```
-
-Run the full test suite:
-
-```bash
 python -m unittest discover -s tests -v
 ```
 
@@ -135,7 +152,6 @@ soc_toolkit/
 ├── escalation.py
 ├── evidence.py
 ├── hypotheses.py
-├── hypothesis_case.py
 ├── investigation_context.py
 ├── models.py
 ├── pipeline.py
@@ -150,14 +166,14 @@ detections/
 ├── authentication.py
 ├── README.md
 ├── sigma/
-│   ├── ssh_auth_failures.yml
-│   ├── ssh_repeated_auth_failures.yml
-│   └── ssh_password_spray_correlation.yml
 └── queries/
-    ├── microsoft-sentinel/
-    │   └── ssh-password-spray.kql
-    └── splunk/
-        └── ssh-password-spray.spl
+
+docs/
+├── assets/
+├── playbooks/
+├── threat-hunts/
+├── portfolio-demo.md
+└── detection-engineering.md
 
 cases/
 ├── CASE-MULTI-001/
@@ -166,26 +182,13 @@ cases/
 └── CASE-INSIDER-001/
 
 tests/
-└── unit and integration coverage for parsing, evidence, hypotheses,
-    assessment, risk, escalation, response, case management, context,
-    scenarios, reporting, quality, validation, detection engineering,
-    and the end-to-end pipeline
+└── unit and integration coverage
 ```
-
-## Quality and security
-
-The repository includes Python 3.11/3.12/3.13 CI and CodeQL analysis. GitHub Actions uses current Node 24-compatible action versions and the security-hardening branch pins those action references to immutable commit SHAs. Dependabot checks GitHub Actions and Python dependencies monthly. Synthetic case data is designed to be reproducible and auditable. Generated report output is not committed as source data.
-
-See [`SECURITY.md`](SECURITY.md) for the reporting policy and [`AUDIT.md`](AUDIT.md) for the repository audit history. The security-hardening review is documented in [`docs/security-audit.md`](docs/security-audit.md) once merged.
 
 ## Safety and scope
 
 This is an educational defensive security project. It does not perform live scanning, exploitation, credential attacks, packet capture, real-world phishing or impersonation operations, persistence, target command execution, or automated containment. Results are analyst-support outputs bounded by the supplied evidence.
 
-## Audit
-
-See [`AUDIT.md`](AUDIT.md) for the repository audit history and Phase 5 employment-readiness disposition. See [`docs/phase4-operational-maturity.md`](docs/phase4-operational-maturity.md) and [`docs/phase5-employment-readiness.md`](docs/phase5-employment-readiness.md) for the quality controls, limitations and hardening work.
-
 ## Author
 
-Created by Karen Johnston — cybersecurity portfolio focused on evidence-based detection, investigation, and defensive tooling.
+Created by Karen Johnston — entry-level cybersecurity portfolio focused on evidence-based detection, investigation, and defensive tooling.
