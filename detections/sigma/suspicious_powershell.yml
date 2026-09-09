@@ -1,0 +1,35 @@
+title: Suspicious PowerShell Execution - Entry Level Example
+id: SOC-EXEC-001
+status: experimental
+description: >-
+  Detects PowerShell process activity containing common encoded-command or
+  download-oriented indicators. This is an investigation lead, not proof of
+  malicious execution.
+logsource:
+  product: windows
+  category: process_creation
+detection:
+  selection:
+    Image|endswith: '\\powershell.exe'
+  suspicious:
+    CommandLine|contains:
+      - '-enc'
+      - 'encodedcommand'
+      - 'downloadstring'
+      - 'invoke-webrequest'
+      - 'iwr '
+  condition: selection and suspicious
+falsepositives:
+  - Legitimate administration scripts
+  - Software deployment and automation tooling
+  - Security testing activity
+level: medium
+tags:
+  - attack.execution
+  - attack.t1059.001
+x-soc-toolkit:
+  assessment: Requires Investigation
+  analyst_note: Validate parent process, user, destination, script purpose, and change context.
+  evidence_gaps:
+    - command-line text alone does not establish intent
+    - endpoint process ancestry should be reviewed
