@@ -1,53 +1,45 @@
 # SOC Toolkit Repository Audit
 
-**Audit status:** Phase 4 baseline audit completed  
+**Audit status:** Phase 4 post-merge audit completed  
 **Repository:** `KE-Johnston1/soc-toolkit`  
-**Baseline:** `main` at `e99ab20f8af6b9b2f427062021a5a580c823652d`  
+**Pre-implementation baseline:** `e99ab20f8af6b9b2f427062021a5a580c823652d`  
+**Phase 4 merge:** `995d0eac0e556cd6a3e6fd652c94d689dbf0c53e`  
 **Audit date:** 2026-09-09
 
 ## Scope
 
-Reviewed repository structure, README claims, package layout, CLI entry points, tests/CI/CodeQL configuration, synthetic case packs and reports, evidence/hypothesis/risk/escalation/response integration, generated artefacts, legacy compatibility modules, and defensive safety boundaries before Phase 4 implementation.
+Reviewed the Phase 4 changes after merge for documentation accuracy, scenario validation alignment, detection-quality controls, case metrics, regression coverage, CI/CodeQL evidence, compatibility items, generated artefacts, and defensive safety boundaries.
 
-## Findings and disposition
+## Final disposition
 
-| Finding | Severity | Disposition |
+| Area | Result | Disposition |
 |---|---|---|
-| Phase 1–3 functionality is represented in the repository workflow | Informational | Verified; retain |
-| `AUDIT.md` described an older Phase 3 baseline rather than the current main revision | Low | Resolved by this Phase 4 audit refresh |
-| README documented Phase 3 as the latest completed phase | Low | Resolved in Phase 4 documentation update |
-| Legacy parser modules remain alongside the refactored package | Medium | Retained intentionally because legacy CLI entry points still expose them; documented |
-| Generated report output is not committed | Informational | Verified; retain `output/.gitkeep` only |
-| Scenario packs are reproducible synthetic training evidence | Informational | Verified; retain |
-| Detection quality was not explicitly measurable in the toolkit | Medium | Resolved by Phase 4 quality checks with synthetic labelled outcomes |
-| Scenario structure could fail silently until a scenario was loaded | Medium | Resolved by Phase 4 structural validation |
-| Case collections lacked descriptive summary metrics | Low | Resolved by Phase 4 case metrics |
-| Quality metrics could be mistaken for production SOC KPIs | Medium | Resolved by explicit documentation limiting metrics to supplied synthetic checks |
-| CodeQL and Python 3.11/3.12/3.13 CI exist | Informational | Retain and require final validation before merge |
-| Defensive synthetic safety boundary remains explicit | Informational | Verified; preserve |
+| Phase 1–3 workflow | Integrated | Retain |
+| Phase 4 quality controls | Integrated | Retain |
+| Scenario validation | Matches the existing scenario schema and regression fixtures | Resolved |
+| Case metrics | Descriptive and bounded to supplied data | Resolved |
+| Detection quality | TP/FP/TN/FN with conditional precision/recall | Resolved |
+| README and audit documentation | Phase status and audit baseline updated | Resolved |
+| Generated report artefacts | Only `output/.gitkeep` retained | Resolved |
+| Legacy CLI/parser compatibility | Still intentionally retained | Documented compatibility item |
+| CI | Python 3.11/3.12/3.13 successful on Phase 4 merge candidate | Verified |
+| CodeQL | Successful on Phase 4 merge candidate | Verified |
+| Safety boundary | Defensive synthetic scope preserved | Verified |
 
-## Phase 4 controls
+## Post-merge verification
 
-Phase 4 adds operational-quality controls without introducing offensive functionality:
+The Phase 4 merge candidate passed the repository's test workflow across Python 3.11, 3.12 and 3.13 and passed CodeQL. The scenario regression controls validate all three Phase 3 scenario packs. No confirmed Phase 4 regression was identified after merge.
 
-- detection quality evaluation with true/false positive and negative outcomes
-- precision and recall where mathematically defined
-- tuning notes that direct analysts to investigate context and telemetry before threshold changes
-- structural scenario-pack validation
-- descriptive case-collection metrics
-- regression tests for these controls
-- updated Phase 4 documentation and completion checklist
+The quality metrics remain explicitly limited to the supplied synthetic corpus. They must not be interpreted as production SOC performance measurements, real-world precision/recall, analyst performance metrics, or evidence that a security event is malicious.
 
-The metrics are intentionally bounded to synthetic labelled checks and case data. They are not claims about production SOC precision, recall, alert volume, analyst performance or organisational risk.
+## Remaining compatibility item
 
-## Compatibility disposition
-
-Legacy parser modules remain because the CLI still provides their historical entry points. Removing them without an intentional compatibility decision would create unnecessary breakage. They are not treated as the authoritative implementation for the Phase 3 scenario reporting layer.
+Legacy parser modules remain because historical CLI entry points still expose them. They are not the authoritative implementation for the Phase 3 scenario-reporting layer. Removing them would be a separate compatibility decision, not an audit defect.
 
 ## Security boundary
 
-The project remains a defensive educational toolkit using synthetic data. Phase 4 adds no live scanning, credential attacks, exploitation, packet capture, persistence, target command execution, real-world phishing/impersonation operations or automated containment.
+The project remains a defensive educational toolkit using synthetic data. Phase 4 introduces no live scanning, credential attacks, exploitation, packet capture, persistence, target command execution, real-world phishing/impersonation operations or automated containment.
 
 ## Audit conclusion
 
-**Phase 4 baseline accepted.** Confirmed documentation and operational-quality gaps were addressed. Remaining compatibility items are intentional and documented. Final CI and CodeQL are release gates before merge, followed by a post-merge audit.
+**Phase 4 accepted and operationally complete.** Confirmed Phase 4 issues were resolved or explicitly documented. The repository has a clean Phase 4 baseline with quality validation, scenario validation, descriptive metrics, tests, CI and CodeQL evidence.
