@@ -20,6 +20,7 @@ The project deliberately separates detection from judgement. A rule firing is an
 - **Phase 2 — Complete:** typed evidence provenance, vulnerability/CVE/CVSS context, business/financial impact, legal/privacy referral context, attribution uncertainty, and advanced scenario evidence requirements.
 - **Phase 3 — Complete:** reproducible scenario case packs and analyst reports covering phishing/impersonation, network/C2/exfiltration investigation, and privileged-account/insider-context investigation.
 - **Phase 4 — Complete:** detection-quality checks, scenario validation, descriptive case metrics, regression coverage, documentation/audit refresh, and explicit limits on synthetic quality metrics.
+- **Phase 5 — Complete:** employment-readiness hardening, security/contributor guidance, dependency-update automation, current GitHub Actions runtimes, and final repository audit controls.
 
 ## Phase 3 scenario cases
 
@@ -137,7 +138,7 @@ tests/
 
 ## Quality and security
 
-The repository includes Python 3.11/3.12/3.13 CI and CodeQL analysis. Synthetic case data is designed to be reproducible and auditable. Generated report output is not committed as source data. Phase 4 quality metrics describe only the supplied synthetic checks.
+The repository includes Python 3.11/3.12/3.13 CI and CodeQL analysis. GitHub Actions uses current Node 24-compatible action versions. Dependabot checks GitHub Actions and Python dependencies monthly. Synthetic case data is designed to be reproducible and auditable. Generated report output is not committed as source data. Phase 4 quality metrics describe only the supplied synthetic checks.
 
 ## Safety and scope
 
@@ -145,7 +146,7 @@ This is an educational defensive security project. It does not perform live scan
 
 ## Audit
 
-See [`AUDIT.md`](AUDIT.md) for the repository audit history and Phase 4 baseline disposition. See [`docs/phase4-operational-maturity.md`](docs/phase4-operational-maturity.md) for the Phase 4 controls and limitations.
+See [`AUDIT.md`](AUDIT.md) for the repository audit history and Phase 5 employment-readiness disposition. See [`docs/phase4-operational-maturity.md`](docs/phase4-operational-maturity.md) and [`docs/phase5-employment-readiness.md`](docs/phase5-employment-readiness.md) for the quality controls, limitations and final hardening work.
 
 ## Author
 
