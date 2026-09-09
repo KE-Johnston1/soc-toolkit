@@ -1,0 +1,28 @@
+title: Unusual Privileged Authentication Context - Entry Level Example
+id: SOC-ID-001
+status: experimental
+description: >-
+  Detects a privileged authentication event when the supplied telemetry marks
+  the account as privileged and the event occurs outside the recorded normal
+  administration context. The rule is an investigation lead.
+logsource:
+  category: authentication
+detection:
+  selection:
+    event_type: authentication_success
+    privileged: true
+  filter_known:
+    normal_context: true
+  condition: selection and not filter_known
+falsepositives:
+  - Emergency administration
+  - On-call activity
+  - Approved maintenance
+  - New or changed working patterns
+level: medium
+tags:
+  - attack.credential_access
+  - attack.t1078
+x-soc-toolkit:
+  assessment: Requires Investigation
+  analyst_note: Confirm ownership, authorisation, source device, maintenance window, and subsequent activity.
