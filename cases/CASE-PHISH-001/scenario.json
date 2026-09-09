@@ -1,0 +1,26 @@
+{
+  "case_id": "CASE-PHISH-001",
+  "title": "Suspected Executive Impersonation / Phishing",
+  "scenario": "phishing_impersonation",
+  "assessment": "Requires Investigation",
+  "confidence": "Medium",
+  "risk": "Medium",
+  "escalation": "SOC Investigation",
+  "response": "Investigate",
+  "closure": "Not ready: sender identity, user interaction, authentication impact, and message disposition require verification.",
+  "evidence": [
+    {"id":"E-001","source":"mail gateway","observation":"Message used a display name matching a finance executive and requested an urgent payment-related action.","type":"observed","confidence":"High","relationship":"neutral"},
+    {"id":"E-002","source":"email headers","observation":"Reply-to identity differs from the expected corporate sender domain.","type":"observed","confidence":"High","relationship":"supports"},
+    {"id":"E-003","source":"user report","observation":"Recipient reported the message as suspicious before completing the requested action.","type":"observed","confidence":"Medium","relationship":"supports"}
+  ],
+  "hypotheses": [
+    "Legitimate external communication using a delegated mailbox",
+    "Executive impersonation / business email compromise attempt",
+    "Compromised legitimate sender account",
+    "Unknown mail-routing or identity anomaly"
+  ],
+  "lessons_learned": [
+    "Verify sender identity independently before treating impersonation as established.",
+    "Preserve headers and message metadata before disposal where policy permits."
+  ]
+}

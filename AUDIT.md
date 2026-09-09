@@ -1,81 +1,46 @@
 # SOC Toolkit Repository Audit
 
-**Audit status:** Initial structural and code audit  
+**Audit status:** Phase 3 pre-implementation audit completed  
 **Repository:** `KE-Johnston1/soc-toolkit`  
-**Audit baseline:** `main`  
-**Audit date:** 2026-09-07
+**Baseline:** `main` at `09e35a1e87fa31094d370e9d16f41ea5f384ba5e`  
+**Audit date:** 2026-09-09
 
-## Executive Summary
+## Scope
+Reviewed repository structure, README claims, Python package layout, tests/CI/CodeQL configuration, synthetic case data, evidence/risk/scenario integration, generated artefacts, and defensive safety boundaries before Phase 3 work.
 
-The repository is currently a small Python proof-of-concept rather than an employment-ready SOC toolkit. It contains useful starting ideas—authentication-log parsing, firewall parsing, web-log parsing, cross-log IP correlation, and a mock IP reputation list—but has significant quality, correctness, maintainability, and security-engineering gaps.
+## Findings and disposition
 
-The existing implementation should be treated as a refactor-and-validation project before additional SOC capabilities are added.
+| Finding | Severity | Disposition |
+|---|---|---|
+| Phase 1 and Phase 2 functionality are integrated into the pipeline | Informational | Verified; retain |
+| README contains a few inconsistent package-name spellings (`Soc_toolkit`) | Low | Corrected in Phase 3 documentation update |
+| Legacy modules remain alongside the refactored package | Medium | Retained temporarily for compatibility; documented as legacy |
+| `output/log_report.txt` is a committed generated artefact | Low | Removed; `output/.gitkeep` retained |
+| Synthetic/sample logs are present | Informational | Retain as reproducible training evidence; no real credentials/customer data |
+| Tests cover core decision layers but lack dedicated scenario-report coverage | Medium | Resolved by Phase 3 scenario/report tests |
+| CodeQL workflow exists | Informational | Retain and validate on final Phase 3 PR |
+| Repository uses defensive synthetic data and no live response | Informational | Verified; preserve boundary |
 
-## Findings
+## Phase 3 controls
 
-### High priority
+Phase 3 adds three reproducible scenario case packs:
 
-1. **No automated test suite is present.** No visible `tests/` directory or CI workflow exists, so detection behaviour is not regression-tested.
-2. **Generated Python bytecode is committed.** `parsers/__pycache__/ip_reputation.cpython-312.pyc` should not be version-controlled.
-3. **The project structure is inconsistent.** `main.py` imports modules from `parsers/`, while duplicate empty root-level `log_parser.py` and `web_parser.py` files also exist.
-4. **Detection logic is overly simplistic.** The authentication parser labels matching failed-password entries as an SSH brute-force pattern without a configurable time window, threshold policy, source context, account context, or analyst-confidence model.
-5. **Parser input paths are hard-coded.** Parsers read fixed paths such as `logs/auth.log`, limiting reuse and making isolated testing harder.
+- `CASE-PHISH-001`: phishing / executive impersonation
+- `CASE-NET-001`: periodic outbound traffic / potential C2 and data transfer
+- `CASE-INSIDER-001`: privileged account activity requiring context
 
-### Medium priority
+Each case explicitly separates observations, evidence relationships, competing hypotheses, assessment, risk, escalation, response, closure readiness, and lessons learned.
 
-6. **Parsers print results directly instead of returning structured data.** This makes correlation, testing, reporting, and reuse harder.
-7. **Error handling is narrow.** Missing files are handled, but malformed input, permissions, encoding, and unexpected parsing failures are not clearly handled.
-8. **IP extraction uses regular expressions without explicit IP validation.** A matching string is not necessarily a valid IPv4 address.
-9. **Correlation is based mainly on IP presence.** It does not correlate exact timestamps, users, event types, ports, direction, or other context.
-10. **Firewall detection is too broad.** The firewall parser treats any line containing `port 22` as an SSH-related block.
-11. **Mock threat intelligence is presented too definitively.** The IP reputation module should clearly identify local training data and should never imply that an IP absent from the list is benign.
-12. **README maturity exceeds the current implementation.** The documentation does not adequately describe limitations, data structures, testing, or analyst-confidence boundaries.
+The new reporting model requires provenance for each evidence item and renders an evidence matrix. Reports state uncertainty explicitly and do not present indicators as proof of compromise, attribution, legal breach, or financial loss.
 
-### Cleanup
+## Remaining compatibility note
 
-13. Remove or clearly justify empty duplicate root-level modules.
-14. Review committed generated `output/log_report.txt`; generated reports should normally be reproducible rather than source data.
-15. Establish a clear Python package/module layout and consistent imports.
-16. **Repository hygiene completed:** MIT licence year refreshed to 2026; a Python-focused `.gitignore` has been added; `output/.gitkeep` preserves the output directory without requiring generated reports to be tracked.
+Legacy parser modules and sample logs remain in the repository because existing CLI entry points still reference them. They are not used to justify the Phase 3 scenario conclusions. A later cleanup can remove them once compatibility requirements are intentionally retired.
 
-## Security / Analyst Design Assessment
+## Security boundary
 
-The strongest direction is to evolve this into a defensive analyst-support toolkit rather than a collection of simplistic pattern-matching scripts.
+The project remains a defensive educational toolkit. Phase 3 does not add live scanning, credential attacks, exploitation, packet capture, persistence, command execution against targets, automated containment, or real-world phishing/impersonation operations. Scenario cases are synthetic analyst-training material.
 
-Future outputs should distinguish:
+## Audit conclusion
 
-- **Observed:** directly present in supplied evidence.
-- **Correlated:** supported by multiple independent records.
-- **Inferred:** reasonable interpretation of observed evidence.
-- **Hypothesis:** possible explanation requiring validation.
-- **Unknown:** evidence is insufficient to determine the answer.
-
-A detection should not automatically equal compromise, malicious activity, or incident confirmation.
-
-## Recommended Target Workflow
-
-`Input → Normalisation → Detection → Correlation → Evidence/Context → Analyst Assessment → Recommended Action → Report`
-
-Engineering goals:
-
-- structured parser results
-- explicit input paths
-- deterministic functions suitable for unit testing
-- validated timestamps/IPs/ports where applicable
-- configurable detection thresholds
-- evidence confidence
-- false-positive handling
-- separation between detection and analyst assessment
-- reproducible synthetic data
-- safe, explicit CLI arguments
-- automated tests
-- CI
-- CodeQL
-- dependency/update hygiene
-- security policy and contribution guidance
-
-## Audit Conclusion
-
-**Current state: functional proof-of-concept, not employment-ready.**
-
-The existing code is salvageable. The next implementation stage should establish automated quality controls, clean generated artefacts, then refactor and test the core parsers before adding advanced SOC functionality.
+**Phase 3 baseline accepted.** Confirmed issues identified before implementation were either resolved in the Phase 3 branch or explicitly retained as compatibility items with documented scope. Final CI and CodeQL remain release gates before merge.
