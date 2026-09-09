@@ -149,7 +149,7 @@ detections/
 parsers/
 ├── auth_parser.py
 ├── firewall_events.py
-a├── firewall_parser.py
+├── firewall_parser.py
 ├── log_parser.py
 └── web_events.py
 
