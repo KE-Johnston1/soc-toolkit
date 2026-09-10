@@ -52,6 +52,10 @@ Case closure / lessons learned
 
 The project deliberately separates **detection from judgement**. A rule firing is an investigation lead, not proof of brute force, compromise, malicious intent, legal breach, or attribution.
 
+## AI-assisted development
+
+ChatGPT was used during development, mainly to assist with coding, debugging, documentation, and reviewing ideas. The resulting code and security decisions were reviewed, adapted, and tested by the author.
+
 ## Detection engineering
 
 The flagship authentication analytic is represented across multiple formats:
